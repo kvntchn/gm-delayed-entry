@@ -1,0 +1,17 @@
+---
+output:
+  pdf_document:
+    includes:
+      in_header: "~/headRs/StatHead.sty"
+fontsize: 11pt
+bibliography: "../../causal.bib"
+# csl: "`r path.expand('~/HeadRs/csl/ama.csl')`"
+---
+
+
+- FU in GM is much longer than 20 years
+- Exclusion restriction on $H$ so that its parents do not include $A$ is not necessary for identification in full data
+- Exclusion restriction on $D$ so that its parents do not include $H$ not needed if $H$ is observed and conditioned upon
+- Not clear if these were for convenience or what
+- What if we increase FU? Lags?
+- No way to verify to what extent the simulation informs the real data generating system

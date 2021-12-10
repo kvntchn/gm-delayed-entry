@@ -1,0 +1,52 @@
+---
+title: "Estimating survival in left filtered data"
+date: "Stat 256: Causal Inference (Fall 2021)"
+author: "Kevin Chen"
+fontsize: 11pt
+# mainfont: arial
+output:
+  pdf_document:
+    latex_engine: lualatex
+    includes:
+      in_header: "~/HeadRs/Stathead.sty"
+    keep_tex: true
+bibliography: "../causal.bib"
+geometry: margin=2.54cm
+---
+
+\fancyhead[R]{Kevin Chen}
+\fancyhead[L]{}
+\renewcommand{\headrulewidth}{0pt}
+
+\onehalfspacing
+\renewcommand{\arraystretch}{1.1}
+
+\thispagestyle{empty}
+
+\setlength{\columnseprule}{0pt}
+
+```{r, include=F}
+knitr::opts_chunk$set(echo = F, results = "asis", fig.align = "center")
+if (!"mytheme" %in% ls()) {
+  source("~/headRs/00-my-theme.R")
+  library(data.table)
+  options(tikzDefaultEngine = 'pdftex')
+}
+library(tidyverse); library(data.table)
+library(here)
+```
+
+```{r child = 'reports/01-introduction.rmd'}
+```
+
+
+```{r child = 'reports/02-methods.rmd'}
+```
+
+```{r child = 'reports/03-results.rmd'}
+```
+
+
+\newpage
+
+# References

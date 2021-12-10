@@ -1,0 +1,75 @@
+# Don't forget to run
+# ###################
+# git config --global core.excludesfile ~/.gitignore_global
+
+*.boxr-oauth
+~/.boxr-oauth
+
+**/private/**
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+.ipynb_checkpoints
+
+# OS generated files #
+######################
+.DS_Store
+.DS
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# R #
+#####
+*.here
+.here
+.Rproj.user
+.Rhistory
+.Ruserdata
+
+# TeX #
+#######
+*.aux
+*.out
+*.blg
+*_cache
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+
+# MS Office #
+#############
+*~$*.doc
+*~$*.xlsx
+*~$*.ppt
+*~$*.pptx
+*~*.tmp
+

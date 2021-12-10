@@ -1,0 +1,388 @@
+---
+output:
+  pdf_document:
+    includes:
+      in_header: "~/headRs/StatHead.sty"
+fontsize: 11pt
+bibliography: "../../causal.bib"
+# csl: "`r path.expand('~/HeadRs/csl/ama.csl')`"
+---
+
+```{r, include=F}
+knitr::opts_chunk$set(echo = F, results = "asis", fig.align = "center")
+if (!"mytheme" %in% ls()) {
+  source("~/headRs/00-my-theme.R")
+  library(data.table)
+  options(tikzDefaultEngine = 'pdftex')
+}
+```
+
+# Methods
+
+## Causal model
+
+The UAW-GM Cohort data includes person-year level exposure, outcome, and covariate data starting three years after hire. To emulate the shape of the data for this longitudinal cohort, we consider 20 years of data over time indexed by years since hire. Notation representing the variables of interest are presented in Table \ref{tab:variables}.
+
+\begin{table}
+\caption{Descriptions of variables.}\label{tab:variables}
+\begin{center}
+\begin{tabular}{lp{0.5\linewidth}}
+\toprule
+ Variable  &  Description                                 \\ \midrule
+ $R$       & Time until start of registry \\
+ $W$       & Baseline covariates \\
+ $S$       & Susceptibility to effects of metalworking fluid exposure \\
+ $H(t)$    & Adverse health status at time $t$ \\
+ $N(t)$    & Employment status at time $t$ \\
+ $A(t)$    & Metalworking fluid exposure at time $t$ \\
+ $D(t)$    & Mortality status at time $t$ \\
+ $Y^*(t)$  & Cancer status at time $t$ \\
+ $Y(t)$    & Observed Cancer status at time $t$ \\
+ $t = \{1, 2, \ldots, 20\}$ & Time, indexed in years after hire \\
+ \bottomrule
+\end{tabular}
+\end{center}\end{table}
+
+Assume we have $n = 50\,000$ iid units in $X$ with
+$$X_i(t) = \left(R_i = 0, W_i, S_i, \bar H_i(t), \bar N_i(t), \bar A_i(t), \bar a_i(t), \bar Y^*_i(t) = \bar Y_i(t) \right).$$
+The bar notation to indicates variable history where $\bar X_i(t) = \left(X_i(k)\right)_{k = 1}^t$. In the case of exposure, $\bar A_i(t)$ is the indicator of whether unit $i$ was ever exposed through time $t$. Note that true cancer status $Y^*(t)$ not observed until $t \ge R$, after the start of the registry. Call $X$ the full data, where we have $R = 0$ for all. In the observed data $X^\text{obs}$, we cannot assume $R = 0$ for all, and susceptibility $S$ is not known:
+$$X^\text{obs}_i(t) = \left(R_i, W_i, \bar N_i(t), \bar A_i(t), \bar a_i(t), \bar Y_i(t) \right).$$
+Under the causal model, we assume the following non-parametric structural equations:
+$$\begin{aligned}
+R     & = f_R \left( U_R \right) \\
+W     & = f_W \left( U_W \right) \\
+S     & = f_S \left( U_S \right) \\
+H(t)  & = f_{H(t)} \left( H(t - 1), U_{H(t)} \right) \\
+N(t)  & = f_{N(t)} \left( W, N(t - 1), H(t), A(t - 1), U_{N(t)} \right) \\
+A(t)  & = f_{A(t)} \left( W, \bar A(t - 1), N(t), U_{A(t)} \right) \\
+D(t)  & = f_{D(t)} \left( W, \bar A(t - 1), D(t - 1), Y^*(t - 1), U_{D(t)} \right) \\
+Y^*(t)& = f_{Y^*(t)} \left(W, S, H(t), \bar A (t), D(t), Y^*(t - 1), U_{Y^*(t)} \right) \\
+Y(t) & = Y^*(t) \times \Ind{Y^*(\lfloor R \rfloor) = 0} \times \Ind{D(t) = 0} \ .
+\end{aligned}$$
+The exogenous variables (errors) $U = \left( U_R, U_W, U_S, U_{H(t)}, U_{N(t)}, U_{A(t)}, U_{D(t)}, U_{Y^*(t)} \right)_{t = 1}^{T}$ are mutually independent. Exposure status is a time-varying indicator; let exposure history $\bar A(t)$ be summarized as being ever-exposed or not with $\bar A(t)  = \Ind{\sum_{k = 1}^t\Ind{A(k) = 1} > 0}$. The outcome of interest is a survival outcome, so $Y^*(t - 1) = 1 \Rightarrow Y^*(t) = 1$. The observed outcome $Y(t)$ at time $t$ is a function of true outcome status and the time points delimiting left and right censoring. An abbreviated directed acyclic graph (DAG) representing the causal relationships encoded in the equations above is presented in Figure \ref{fig:dag}.
+
+\begin{figure}
+\caption{Directed acyclic graph representing the causal relationships encoded in the non-parametric structural equation model at time $t$.}
+\label{fig:dag}
+\begin{center}
+\begin{tikzpicture}[>= stealth, auto, node distance = 2.25cm, semithick, fill=white, inner sep=0pt]
+\tikzstyle{every state}=[shape = circle, align = center, draw = none]
+\node[state] (H0) {$H(t - 1)$};
+\node[state] (N0) [below right of=H0] {$N(t - 1)$};
+\node[state] (A0) [below right of=N0] {$\bar A(t - 1)$};
+\node[state] (D0) [below right of=A0] {$D(t - 1)$};
+\node[state] (Y0) [below right of=D0] {$Y^*(t - 1)$};
+\node[state] (W) [above right of=H0] {$W$};
+\node[state] (H) [right of=H0, node distance = 4cm] {$H(t)$};
+\node[state] (N) [below right of=H, node distance = 4cm] {$N(t)$};
+\node[state] (A) [below right of=N, node distance = 4cm] {$\bar A(t)$};
+\node[state] (D) [above right of=N, node distance = 3cm] {$D(t)$};
+\node[state] (Y) [above right of=A, node distance = 3cm] {$Y^*(t)$};
+\node[state] (S) [above right of=D, node distance = 3cm] {$S$};
+%
+\path[->] (H0) edge (H);
+\path[->] (W) edge [bend right=10] (N);
+\path[->] (N0) edge (N);
+\path[->] (H) edge (N);
+\path[->] (A0) edge (N);
+\path[->] (W) edge [bend right=15] (A);
+\path[->] (A0) edge (A);
+\path[->] (N) edge (A);
+\path[->] (W) edge (D);
+\path[->] (A0) edge [bend left=15] (D);
+\path[->] (D0) edge [bend right=15] (D);
+\path[->] (Y0) edge [bend right=10] (D);
+\path[->] (W) edge [bend left=5] (Y);
+\path[->] (S) edge [bend left=30] (Y);
+\path[->] (S) edge [bend left=15] (Y0);
+\path[->] (H) edge (Y);
+\path[->] (A) edge (Y);
+\path[->] (D) edge (Y);
+\path[->] (Y0) edge (Y);
+\end{tikzpicture}
+\end{center}
+\end{figure}
+
+## Simulation
+
+Parametric relationships between the variables were imposed in simulations. For the $n = 50\,000$ units over $T = 20$ years, we have:
+
+- $U_j \overset{\text{iid}}{\sim} \text{uniform}\,[0,1]$ for all $j$
+- In full data $R = 0$ otherwise $R \sim \text{uniform}\,[0, 30]$
+- $W = \Ind{U_W \le p_W} \sim \text{Bernoulli}\left( p_W \right)$
+- $S = \Ind{U_S \le p_S} \sim \text{Bernoulli}\,(p_S)$
+- If $H(t - 1) = 1$, then $H(t) = 1$ otherwise $H(t) = \Ind{U_{H(t)} \le p_H} \sim \text{Bernoulli}\,(p_H)$
+- if $N(t - 1) = 0$ then $N(t) = 0$ otherwise
+	$$N(t) \sim \text{Bernoulli}\left\{
+	\text{logit}\,\left(
+		\beta_0^N
+		+ \beta_W^N W
+		+ \beta_H^N H(t)
+		+ \beta_A^N A(t - 1) \times \Ind{t > 1}
+		+ U_{N(t)}
+	\right)
+	\right\}$$
+- If $N(t) = 0$ then $A(t) = 0$ otherwise
+	$$A(t) \sim \text{Bernoulli}\left\{
+	\text{logit}\,\left(
+		\left( \beta_0^A + \beta_W^A W\right) \times \Ind{t = 1}
+		+ \beta_A^A A(t - 1) \times \Ind{t > 1}
+		+ U_{A(t)}
+	\right)
+	\right\}$$
+- If $D(t - 1) = 1$ then $D(t) = 1$ otherwise
+	$$D(t) \sim \text{Bernoulli}\left\{
+	\text{logit}\,\left(\begin{aligned}
+		\beta_0^D
+		+ \beta_W^D W
+		+ \beta_{\bar A}^D \bar A(t - 1) \times \Ind{t > 1} \\
+		+ \beta_{\bar Y}^D \sum_{k = 1}^{t - 1} Y^*(k) \times \Ind{t > 1}
+		+ U_{D(t)}
+	\end{aligned}\right)
+	\right\}$$
+- If $Y^*(t - 1) = 1$ then $Y^*(t) = 1$ otherwise
+	$$Y^*(t) \sim \text{Bernoulli}\left\{
+	\text{logit}\,\left(\begin{aligned}
+		\beta_0^Y
+		+ \beta_W^Y W
+		+ \beta_{A}^Y A(t)
+		+ \beta_{\bar A}^Y \bar A(t - 1) \times \Ind{t > 1} \\
+		+ \beta_{S}^Y S \times \bar A(t)
+		+ \beta_{H}^Y H(t)
+		+ U_{Y^*(t)}
+	\end{aligned}\right)
+	\right\}$$
+- If $t < R$ then $Y(t) = 0$
+- If $t \ge R$ then $Y(t) = Y^*(t) \times \Ind{Y^*(\lfloor R \rfloor) = 0} \times \Ind{D(t) = 0}$.
+
+Five sets of data were generated using these equations to represent five scenarios. Scenario 1 represents the base case where 10% of workers are susceptible to exposure-related effects, the odds ratio of mortality each additional year following cancer diagnosis is about 1.6, and there is moderate time-varying confounding by health status. In scenario 2, we have greater cancer-related mortality by increasing $\beta_{\bar Y}^D$. In scenario 3, we increase $p_S$, the proportion of the study population susceptible to the carcinogenic effects of MWF exposure. In scenario 4, we consider greater time-varying confounding by health status by increasing $\beta_H^N$ and $\beta_H^Y$. In the last scenario, we have greater background cancer incidence by increasing $\beta_0^Y$. The sets of parameters used in the five scenarios are presented in Table \ref{tab:params}.
+
+\begin{table}
+\caption{Simulation parameters.}
+\label{tab:params}
+\begin{center}
+```{r}
+sim_param.tab <- sim_param <- data.frame(
+	check.names = F,
+	Parameter =  c(
+		"p_S", "p_W", "p_H", "\\beta_0^N", "\\beta_W^N", "\\beta_H^N",
+		"\\beta_A^N", "\\beta_0^A", "\\beta_W^A", "\\beta_A^A", "\\beta_0^D",
+		"\\beta_W^D", "\\beta_{\\bar A}^D", "\\beta_{\\bar Y}^D", "\\beta_0^Y",
+		"\\beta_W^Y", "\\beta_A^Y", "\\beta_{\\bar A}^Y", "\\beta_H^Y",
+		"\\beta_S^Y"),
+	"Scenario 1" = c(
+		0.1, 0.2, 0.3, 3, -0.1, -0.5, -1.5, -1.5, -0.5, 2.5, -5.5, 1, 0.5, 0.5, -7, 2, 0.25, 0.2, 0.7, 0.3
+	),
+	"Scenario 2" = c(
+		0.1, 0.2, 0.3, 3, -0.1, -0.5, -1.5, -1.5, -0.5, 2.5, -5.5, 1, 0.5, 2.0, -7, 2, 0.25, 0.2, 0.7, 0.3
+	),
+	"Scenario 3" = c(
+		0.2, 0.2, 0.3, 3, -0.1, -0.5, -1.5, -1.5, -0.5, 2.5, -5.5, 1, 0.5, 0.5, -7, 2, 0.25, 0.2, 0.7, 0.3
+	),
+	"Scenario 4" = c(
+		0.1, 0.2, 0.3, 3, -0.1, -1.5, -1.5, -1.5, -0.5, 2.5, -5.5, 1, 0.5, 0.5, -7, 2, 0.25, 0.2, 1.7, 0.3
+	),
+	"Scenario 5" = c(
+		0.1, 0.2, 0.3, 3, -0.1, -0.5, -1.5, -1.5, -0.5, 2.5, -5.5, 1, 0.5, 0.5, -6, 2, 0.25, 0.2, 0.7, 0.3
+	)
+)
+
+sim_param$Parameter <- c(
+		"p_S", "p_W", "p_H", "beta_0N", "beta_WN", "beta_HN",
+		"beta_AN", "beta_0A", "beta_WA", "beta_AA", "beta_0D",
+		"beta_WD", "beta_barAD", "beta_barYD", "beta_0Y",
+		"beta_WY", "beta_AY", "beta_barAY", "beta_HY",
+		"beta_SY")
+saveRDS(sim_param, here::here("resources", "sim_param.rds"))
+
+sim_param.tab[,1] <- paste0("$", sim_param.tab[,1], "$")
+sim_param.tab[,2:ncol(sim_param.tab)] <- sapply(
+	sim_param.tab[,2:ncol(sim_param.tab)], function(x) {
+		formatC(x, digits = 2, format = "f")
+	})
+
+for (x in list(
+	c(1, 4),
+	c(6, 5),
+	c(14, 3),
+	c(15, 6),
+	c(19, 5)
+)) {
+	sim_param.tab[x[[1]], x[[2]]] <- paste0(
+		"\\textbf{", sim_param.tab[x[[1]], x[[2]]], "}")
+}
+
+sim_param.tab <- sim_param.tab[,c(
+	"Parameter", paste("Scenario", 1:5))]
+names(sim_param.tab)[-1] <- paste("Scenario", 1:(ncol(sim_param.tab) - 1))
+
+xtable(sim_param.tab, align = c("c", rep("r", ncol(sim_param.tab))))
+```
+\end{center}
+\end{table}
+
+## Interventions, potential outcomes, target parameters, and estimation
+
+The substantive question of interest is the causal effect of occupational exposure to MWF on cancer incidence risk. Since occupational MWF exposure occurs only when individuals are at work, we define dynamic exposure regimes that depend on employment status. Under rule $a_0$, set $D(t) = 0$, and set $A(t) = 0$ while $N(t) = 1$. Under rule $a_1$, set $D(t) = 0$, and set $A(t) = 1$ while $N(t) = 1$. Under both rules, we prevent censoring by death as if it were intervenable. The causal effect is defined by contrasting the survival function $S_{a_1}(t) = 1 - \E{Y_{a_1}(t)}$ under rule $a_1$ to $S_{a_0}(t) = 1 - \E{Y_{a_0}(t)}$ that under rule $a_0$. Note that this causal estimand is defined over _a priori counterfactuals_ not observable in the real world [@Frangakis_2002]. This approach is standard in epidemiologic studies, however.
+
+The survival function  expresses the probability that a person following rule $a$ is cancer-free at the end of time point $t$. The expected time until cancer under rule $a$ is $\mu_{a} = \sum_0^K S_{a}(t) \, dt$. Our causal estimand is summary measure $\psi = \mu_{a_1} - \mu_{a_0}$, the difference in expected time until event under two different interventions over 20 years of follow-up under five different data generating scenarios. Bias will be evaluated by comparing estimates of $\psi$ to its true value in 250 simulations per scenario (the original analysis performed 500). The true value will be calculated by simulating the full data for five hundred thousand individuals (the original analysis used one million) with rules $a_0$ and $a_1$ applied deterministically. Estimates of $\psi$ will be obtained by first estimating the survival curves $S_a(t)$ using two estimators: the inverse probability weighted Kaplan-Meier estimator (WKM) and the Aalen-filtered WKM (AWKM). These survival estimators are detailed in the following section.
+
+## Kaplan-Meier estimator and extensions
+
+To estimate survival, we applied extensions of the widely-known Kaplan-Meier (KM) estimator for survival [@Kaplan_1958]. First, we review the estimator of @Xie_2005, an extension of the KM estimator where units are weighted by the inverse probability of treatment. The standard KM estimator requires counting up the number of cases $c^0_{a}(t)$ that occurred in interval $(t - 1, t]$ and the number of units at risk $R^0_{a}(t)$ in that interval at all event times $t$. Assuming cancer status was assessed at the end of regular intervals $t = 1, \ldots, K$, we have:
+$$\begin{aligned}
+c^0_{a} (t)
+& = \sum_i^n \Ind{Y_i(t) = 1} \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)} \\
+R^0_{a} (t)
+& = \sum_i^n \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)}.
+\end{aligned}$$
+The standard survival estimator is
+$$\hat S^0_{a}(t) =
+\begin{cases}
+1 & \text{if } t < t_1 \\
+\prod_{j \le t} \left(1 - \frac{c^0_{a}(j)}{R^0_{a}(j)}\right) & \text{if } t \ge t_1 \\
+\end{cases}$$
+where $t_1$ is the first event time.
+
+In observational studies, survival contrasts estimated using the standard KM estimator are biased for the true causal survival contrast. However, if conditional ignorability and positivity are attained, the inverse probability weighted KM (WKM) estimator of @Xie_2005 yields unbiased estimates of the true causal survival curve. The WKM estimator augments the standard KM estimator by weighting units at time $t$ by $w_{i, a}(t)$ the inverse probability of treatment:
+$$\begin{aligned}
+c^w_{a} (t)
+& = \sum_i^n w_{i, a}(t) \times \Ind{Y_i(t) = 1} \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)}\\
+R^w_{a} (t)
+& = \sum_i^n w_{i, a}(t) \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)}
+\end{aligned}$$
+The WKM survival estimator for rule $a$ is
+$$\hat S^w_{a}(t) =
+\begin{cases}
+1 & \text{if } t < t_1 \\
+\prod_{j \le t} \left(1 - \frac{c^w_{a}(j)}{R^w_{a}(j)}\right) & \text{if } t \ge t_1 \\
+\end{cases}$$
+where $t_1$ is the first event time.
+
+Finally, to account for (uninformative) left filtering, we applied the Aalen filter, which considers only the units at time $t$ for which the outcome is observed:
+$$\begin{aligned}
+c_{a} (t)
+& = \sum_i^n w_{i, a}(t) \times \Ind{Y_i(t) = 1} \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)} \times \Ind{t \ge R_i} \\
+R_{a} (t)
+& = \sum_i^n w_{i, a}(t) \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)} \times \Ind{t \ge R_i}
+\end{aligned}$$
+The Aalen-filtered WKM (AWKM) estimator for rule $a$ is
+$$\hat S_{a}(t) =
+\begin{cases}
+1 & \text{if } t < t_1 \\
+\prod_{j \le t} \left(1 - \frac{c_{a}(j)}{R_{a}(j)}\right) & \text{if } t \ge t_1 \\
+\end{cases}$$
+where $t_1$ is the first event time.
+
+In the full data, the WKM and AWKM estimators are equivalent, and identification is achieved under overlap (positivity) and sequential ignorability (randomization) assumptions:
+$$\begin{aligned}
+Y^*_{a, \bar d = 0} (t')   & \indep A(t) \mid W,\ \bar A(t - 1) = \bar a(t - 1),\ D(t - 1) = 0,\ N(t) = 1\\
+Y^*_{a, \bar d = 0} (t') & \indep D(t) \mid W,\ D(t - 1) = 0,\ Y^*(t - 1) = 0,\ \bar A(t - 1) = \bar a(t - 1)
+\end{aligned}$$
+for all times $t'\ge t$, and
+<!-- Note that @Izano_2017_thesis did not condition on cancer status $Y^*(t - 1)$ in their estimation of weights. -->
+$$0 < \Prob{ A(t) = 1 \mid W,\ \bar A(t - 1) = \bar a(t - 1),\ D(t - 1) = 0,\ N(t) = 1} < 1$$
+$$0 < \Prob{D(t) = 0 \mid W,\ D(t - 1) = 0,\ Y^*(t - 1) = 0,\ \bar A(t - 1) = \bar a(t - 1)} < 1.$$
+
+Graphical representations of the first and second components of the ignorability assumption are presented in Figures \ref{fig:ignorability_a} and \ref{fig:ignorability_d} where conditioning on boxed variables are represented by the removal of edges pointing away from those variables. The resulting graphs show the fulfillment of Pearl's backdoor criterion for the estimation of the causal effects of $\bar A(t)$ on $Y^*(t)$ and $D(t)$ on $Y^*(t)$, respectively. Thus, the causal effect of the joint intervention on $\big(\bar A(t), D(t)\big)$ at each time $t$ is identified. Causal identification is not attained when true cancer status $Y^*(t)$ is not known.
+
+\begin{figure}
+\caption{Directed acyclic graph representing the causal relationships encoded in the non-parametric structural equation model at time $t$ after conditioning on $\{W,\ \bar A(t - 1),\ D(t - 1),\ N(t)\}$.}
+\label{fig:ignorability_a}
+\begin{center}
+\begin{tikzpicture}[>= stealth, auto, node distance = 2.25cm, semithick, fill=white, inner sep=0pt]
+\tikzstyle{every state}=[shape = circle, align = center, draw = none]
+\node[state] (H0) {$H(t - 1)$};
+\node[state] (N0) [below right of=H0] {$N(t - 1)$};
+\node[state] (A0) [shape=rectangle, draw=black, inner sep=2.5pt, below right of=N0] {$\bar A(t - 1)$};
+\node[state] (D0) [shape=rectangle, draw=black, inner sep=2.5pt, below right of=A0] {$D(t - 1)$};
+\node[state] (Y0) [below right of=D0] {$Y^*(t - 1)$};
+\node[state] (W) [shape=rectangle, draw=black, inner sep=2.5pt, above right of=H0] {$W$};
+\node[state] (H) [right of=H0, node distance = 4cm] {$H(t)$};
+\node[state] (N) [shape=rectangle, draw=black, inner sep=2.5pt, below right of=H, node distance = 4cm] {$N(t)$};
+\node[state] (A) [below right of=N, node distance = 4cm] {$\bar A(t)$};
+\node[state] (D) [above right of=N, node distance = 3cm] {$D(t)$};
+\node[state] (Y) [above right of=A, node distance = 3cm] {$Y^*(t)$};
+\node[state] (S) [above right of=D, node distance = 3cm] {$S$};
+%
+\path[->] (H0) edge (H);
+\path[->] (N0) edge (N);
+\path[->] (H) edge (N);
+\path[->] (S) edge [bend left=15] (Y0);
+\path[->] (S) edge [bend left=30] (Y);
+\path[->] (H) edge (Y);
+\path[->] (A) edge (Y);
+\path[->] (D) edge (Y);
+\path[->] (Y0) edge [bend right=10] (D);
+\path[->] (Y0) edge (Y);
+\end{tikzpicture}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\caption{Directed acyclic graph representing the causal relationships encoded in the non-parametric structural equation model at time $t$ after conditioning on $\{W,\ \bar A(t - 1),\ D(t - 1),\ Y^*(t - 1)\}$.}
+\label{fig:ignorability_d}
+\begin{center}
+\begin{tikzpicture}[>= stealth, auto, node distance = 2.25cm, semithick, fill=white, inner sep=0pt]
+\tikzstyle{every state}=[shape = circle, align = center, draw = none]
+\node[state] (H0) {$H(t - 1)$};
+\node[state] (N0) [below right of=H0] {$N(t - 1)$};
+\node[state] (A0) [shape=rectangle, draw=black, inner sep=2pt, below right of=N0] {$\bar A(t - 1)$};
+\node[state] (D0) [shape=rectangle, draw=black, inner sep=2pt, below right of=A0] {$D(t - 1)$};
+\node[state] (Y0) [shape=rectangle, draw=black, inner sep=2pt, below right of=D0] {$Y^*(t - 1)$};
+\node[state] (W) [shape=rectangle, draw=black, inner sep=2pt, above right of=H0] {$W$};
+\node[state] (H) [right of=H0, node distance = 4cm] {$H(t)$};
+\node[state] (N) [below right of=H, node distance = 4cm] {$N(t)$};
+\node[state] (A) [below right of=N, node distance = 4cm] {$\bar A(t)$};
+\node[state] (D) [above right of=N, node distance = 3cm] {$D(t)$};
+\node[state] (Y) [above right of=A, node distance = 3cm] {$Y^*(t)$};
+\node[state] (S) [above right of=D, node distance = 3cm] {$S$};
+%
+\path[->] (H0) edge (H);
+%\path[->] (W) edge [bend right=10] (N);
+\path[->] (N0) edge (N);
+\path[->] (H) edge (N);
+%\path[->] (A0) edge (N);
+%\path[->] (W) edge [bend right=15] (A);
+%\path[->] (A0) edge (A);
+\path[->] (N) edge (A);
+%\path[->] (W) edge (D);
+%\path[->] (A0) edge [bend left=15] (D);
+%\path[->] (D0) edge [bend right=15] (D);
+%\path[->] (Y0) edge [bend right=10] (D);
+%\path[->] (W) edge [bend left=5] (Y);
+\path[->] (S) edge [bend left=30] (Y);
+\path[->] (S) edge [bend left=15] (Y0);
+\path[->] (H) edge (Y);
+\path[->] (A) edge (Y);
+\path[->] (D) edge (Y);
+%\path[->] (Y0) edge (Y);
+\end{tikzpicture}
+\end{center}
+\end{figure}
+
+## Estimation of weights
+
+To estimate the weights for the WKM and AWKM estimators, we fit two logistic regressions at each time point $t = 1, \ldots 20$:
+$$\begin{aligned}
+\text{logit} \left(\Prob{
+	A(t) = 1
+	\mid W,\ \bar A(t - 1),\ D(t - 1) = 0,\ N(t) = 1
+	}\right)
+& = \alpha_0 + W \alpha_1 + \bar A(t - 1) \alpha_2 \\
+\text{logit} \left(\Prob{
+	D(t) = 1
+	\mid W,\ D(t - 1) = 0,\ Y(t - 1) = 0,\ \bar A(t - 1)}\right)
+	& = \beta_0 + W \beta_1 + \bar A(t - 1) \beta_2
+\end{aligned}$$
+The first will be fitted on data for those alive and at work at time $t$. The second will be among those alive and (observed to be) cancer-free. For each unit at time $t$, the weight will be calculated by taking the inverse of the cumulative probability of following the exposure rule and remaining uncensored:
+$$\hat w_{a} (t) =
+	\left[
+	\prod^t_{j = 1}
+	\begin{aligned}
+	\widehat {\mathbb P} \left\{
+	A(j) = a(j) \mid W,\ \bar A(j - 1) = \bar a (j - 1),\ D(j - 1) = 0,\ N(j) = 1
+	\right\} \times \\
+	\widehat {\mathbb P} \left\{D(j) = 0
+	\mid W,\ D(j - 1) = 0,\ Y(j - 1) = 0,\ \bar A(j) = \bar a (j) \right\}
+	\end{aligned}\right]^{-1}.$$

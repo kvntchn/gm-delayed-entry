@@ -1,0 +1,22 @@
+---
+output:
+  pdf_document:
+    includes:
+      in_header: "~/headRs/StatHead.sty"
+fontsize: 11pt
+bibliography: "../../causal.bib"
+# csl: "`r path.expand('~/HeadRs/csl/ama.csl')`"
+---
+
+# Application to the UAW-GM Cohort
+
+In the simulation study, we showed that under several scenarios compatible with our hypothetical causal structure, the AWKM survival estimator had small bias compared to the WKM estimator. The bias was smaller when the cumulative incidence of the outcome was low and at later follow-up time points. Now, we estimate cancer-free survival in a real-world context. Using data from the UAW-GM Cohort study, we follow individuals starting from hire to 40 years after hire for incidence of colon cancer. This duration of follow-up spans the vast majority of individuals' working lifetimes.
+
+Colon cancer incidence was obtained via linkage to the Michigan Cancer Registry, which recorded cancer incidence cases starting on January 1, 1985.
+<!-- and linkage to Surveillance, Epidemiology, and End Results (SEER), which recorded cancer incidence cases starting on January 1, 1973. -->
+The cohort is comprised of individuals hired between 1938 and 1985. Cancer-free survival to the start of the registry is a left-filtering process possibly in the presence of the HWSE as investigated in the simulations. Over the 40 year follow-up period, vital status was obtained through the Social Security Administration, the National Death Index, as well as records provided by the UAW. Baseline confounders included race, sex, plant, and year of hire. Time-varying confounders included age, cumulative time off, and exposure to the metalworking fluids not under study. Representations of these terms were included in the estimation of both the treatment and censoring mechanisms, which were estimated with stratification on every year of follow-up. The exposure rules of interest were identical to those in the simulation study: $a_0$ never exposed and $a_1$ always exposed while at work. We assume that the effect of exposure on health status, mortality, cancer incidence, etc occurs after a lag of 15 years. Similarly, we assume that the effects of cumulative time off occur after a 15 year lag. Counterfactual survival under rules $a_0$ and $a_1$ were estimated using the WKM and AWKM estimators.
+
+```{r, eval=F}
+mwf <- NULL
+source(here("scripts", "04-application.R"))
+```

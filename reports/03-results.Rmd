@@ -1,0 +1,90 @@
+---
+output:
+  pdf_document:
+    includes:
+      in_header: "~/headRs/StatHead.sty"
+fontsize: 11pt
+bibliography: "../../causal.bib"
+# csl: "`r path.expand('~/HeadRs/csl/ama.csl')`"
+---
+
+```{r, include=F}
+knitr::opts_chunk$set(echo = F, results = "asis", fig.align = "center")
+if (!"mytheme" %in% ls()) {
+  source("~/headRs/00-my-theme.R")
+  library(data.table)
+  options(tikzDefaultEngine = 'pdftex')
+}
+library(tidyverse); library(data.table)
+library(here)
+```
+
+```{r}
+sim_results <- readRDS(here("reports/resources", "sim_results.rds"))
+survival.tab <- dcast(
+	sim_results[,.(
+		Survival = sum(Survival)
+	), .(Rule = rule, scenario, Estimator)],
+	... ~ scenario,
+	value.var = "Survival"
+)
+
+setorder(survival.tab, Rule, Estimator)
+
+differences.tab <- survival.tab[,.(
+		`Scenario 1` = `Scenario 1`[2] - `Scenario 1`[1],
+		`Scenario 2` = `Scenario 2`[2] - `Scenario 2`[1],
+		`Scenario 3` = `Scenario 3`[2] - `Scenario 3`[1],
+		`Scenario 4` = `Scenario 4`[2] - `Scenario 4`[1],
+		`Scenario 5` = `Scenario 5`[2] - `Scenario 5`[1]
+	), .(Estimator)]
+
+bias.tab <- data.table(
+	Estimator = c("WKM", "AWKM"),
+	sapply(differences.tab[,-1], function(x) {
+		c(x[2] - x[1], x[3] - x[1])
+	}))
+
+survival.tab[,`:=`(
+	Rule = {Rule <- gsub("Rule ", "", Rule)
+	Rule[duplicated(Rule)] <- ""
+	Rule}
+)]
+```
+
+# Results
+
+Figure \ref{fig:survival} presents the true survival curves as well as the WKM and AWKM survival curves averaged over 250 replications for each intervention rule and scenario. Qualitatively, the WKM estimator consistently over-estimates survival whereas the the AWKM survival curve is much closer to the truth. The bias of the AWKM survival estimate appears to be larger earlier in follow-up and smaller as follow-up extends forward. The bias of both the the WKM and the AWKM survival curves appears largest in Scenario 5.
+
+\begin{figure}
+\caption{Cancer-free survival over time since hire in five simulation scenarios. The true (discrete) survival curve is represented by the solid lines. The average inverse probability weighted Kaplan-Meier (WKM) survival curve is represented by the dashed-line with short dashes. The average Aalen-filtered inverse probability weighted Kaplan-Meier (AWKM) survival curve is represented by the dashed-line with long dashes. Estimated survival curves were averaged over 250 replicates. Salmon color indicates survival and survival estimates under rule $a_0$ when workers are always unexposed. Cyan color indicates those under rule $a_1$ when workers are always exposed while employed.}
+\label{fig:survival}
+\begin{center}
+\includegraphics{`r here::here("reports/resources", "results.pdf")`}
+\end{center}
+\end{figure}
+
+Table \ref{tab:survival} presents true and estimated average cancer-free survival times under each intervention rule and scenario. Table \ref{tab:differences} presents differences in survival time contrasting rule $a_1$ to rule $a_0$. Table \ref{tab:bias} presents estimates of the bias of the WKM and AWKM estimators for $\psi$, the difference in average cancer-free survival time over 20 years of follow-up. These numeric results are consistent with the qualitative interpretations of Figure \ref{fig:survival}. The WKM estimator over-estimates the difference in cancer-free survival time, resulting in bias toward the null, whereas the AWKM estimator under-estimates the cancer-free survival, resulting in bias away from the null. In every scenario, the bias of the WKM-derived contrast is several times larger in magnitude than that of the AWKM-derived contrast. The bias of both estimators is greatest for Scenario 5.
+
+The qualitative results here are consistent with those of @Izano_2017_thesis. However, true and estimated survival in the present analysis is larger than those found previously. Furthermore, the true and estimator average mean differences in survival are smaller in magnitude in the present case. The magnitudes of the bias estimates are also smaller.
+
+```{r}
+print(xtable(survival.tab,
+			 caption = "True cancer-free survival time $\\mu_{a}$ over 20-year follow-up and estimator averages over 250 replicates.",
+			 label = "tab:survival"),
+			hline.after = c(-1,0,3, nrow(survival.tab)),
+			floating = T)
+
+print(xtable(
+	differences.tab,
+	caption = "Difference in average cancer-free survival time over 20-year follow-up comparing rule $a_1$ always exposed to rule $a_0$ never exposed at work: true value $\\psi$ and estimator averages over 250 replicates.",
+	label = "tab:differences"),
+	floating = T)
+
+
+print(xtable(
+	bias.tab,
+	caption = "Bias estimates of estimators for $\\psi$, the difference in average cancer-free survival time over 20 years of follow-up.",
+	label = "tab:bias"),
+	floating = T)
+```
