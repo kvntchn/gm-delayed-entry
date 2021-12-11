@@ -37,7 +37,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
 \hypersetup{
-  pdftitle={Estimating survival in left filtered data: simulation and application},
+  pdftitle={Estimating survival in left filtered data},
   pdfauthor={Kevin Chen},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
@@ -254,8 +254,7 @@
 \newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
 \newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
-\title{Estimating survival in left filtered data: simulation and
-application}
+\title{Estimating survival in left filtered data}
 \author{Kevin Chen}
 \date{Stat 256: Causal Inference (Fall 2021)}
 
@@ -299,50 +298,53 @@ time-varying confounding affected by past exposure. Previous studies
 have attempted to assess the presence of the HWSE in observed data by
 assessing so-called path-specific associations using Cox proportional
 hazards modeling (Naimi et al. 2013; Garcia et al. 2017). However, these
-measures of associations are themselves subject to the confounding they
-seek to quantify.
+measures of associations were themselves subject to the confounding
+structures they sought to characterize.
 
-If sequential ignorability of exposure status at each point in follow-up
-and positivity can be attained conditional on covariates, then causal
-methods can be applied to account for the HWSE. Past studies have
-applied causal methods capable of accounting for time-varying
-confounding affected by past exposure to the study of MWF exposures and
-cancer mortality outcomes in the UAW-GM Cohort Study (Garcia et al.
-2018; Izano et al. 2019), but the study of cancer incidence outcomes is
-further problematized by incomplete observation of cancer incidence
-outcomes over the study period. We wish to make inferences about the
+If conditional sequential ignorability of exposure and censoring status
+at each point in follow-up and positivity can be attained given
+covariate history, then causal methods can be applied to account for the
+HWSE. Past studies have applied causal methods capable of accounting for
+time-varying confounding affected by past exposure to the study of MWF
+exposures and cancer mortality outcomes in the UAW-GM Cohort Study
+(Garcia et al. 2018; Izano et al. 2019), but the study of cancer
+incidence outcomes is further problematized by the incomplete
+observation of cancer incidence outcomes at every point of follow-up
+over the study period. Nonetheless, we wish to make inferences about the
 carcinogenicity of MWF exposure over an individual's lifetime starting
-three years after they enter the workforce. The UAW-GM cohort includes
-those hired roughly between 1938 and 1982. However, cancer incidence
-reporting at the Michigan Cancer Registry did not begin until 1985. In
-particular, we have the presence of \emph{left filtering} in the UAW-GM
-Cohort Study when cancer incidence is the outcome of interest: before
-1985, both cancer incidence status and time of cancer incidence are
-unknown. Observation of the complete cancer incidence outcome vector
-over the study period is conditional on an individual surviving to 1985
-cancer-free.
+upon entry into the workforce. The UAW-GM Cohort included those hired
+roughly between 1938 and 1985. However, cancer incidence reporting at
+the Michigan Cancer Registry did not begin until 1985. Hence, our
+observed cohort data is subject to \emph{left filtering}: cancer
+incidence is the outcome of interest, but before 1985, both cancer
+incidence status and time of cancer incidence are unknown. Observation
+of the complete cancer incidence outcome vector over the study period
+was conditional on an individual surviving to 1985 cancer-free.
 
 In the presence of the HWSE, left filtering implies outcome
 misclassification that is informative of true cancer status. As part of
 her dissertation research, Izano (2017) conducted a quantitative bias
-analysis for the estimation of survival curves in the presence of left
-filtering and the HWSE. She simulated data compatible with the HWSE and
+analysis for the estimation of survival curves using left filtered data
+in the presence of HWSE. She simulated data compatible with the HWSE and
 estimated cancer-free survival curves using an inverse probability of
 treatment and censoring weighted Kaplan-Meier (WKM) estimator and the
 WKM with an Aalen filter for left-filtering (AWKM) (Andersen et al.
 1993; Xie and Liu 2005). Data were simulated under five different
-scenarios. The causal estimands of interest were the survival curves
-under interventions: (1) always exposed at work with no censoring due to
-death and (2) never exposed at work with no censoring due to death. For
-each intervention, three survival curves were produced: (1) the true
-survival curve, (2) the WKM survival curve, and (3) AWKM survival curve.
-The bias in mean survival difference calculated by AWKM was negligible
-when the true 20-year risk of cancer was under 0.25.
+scenarios. The survival curves under the following interventions were
+computed or estimated in 250 replicates: (1) always exposed at work with
+no censoring due to death and (2) never exposed at work with no
+censoring due to death. For each intervention, three survival curves
+were produced: (1) the true survival curve, (2) the WKM survival curve,
+and (3) AWKM survival curve. Estimator bias was evaluated by comparing
+the average of 250 estimates of to the average difference in cancer-free
+survival under the two rules to the true average survival difference
+when exposure and censoring were controlled deterministically.
 
-Here, we replicate the simulation and bias analysis presented in Chapter
-3 of Izano (2017), embed the problem in the non-parametric structural
-causal approach of Pearl (1995), comment on the results, and apply the
-WKM and AWKM estimators to the UAW-GM Cohort.
+The present project replicates the simulation and bias analyses
+presented in Chapter 3 of Izano (2017), embeds the problem in the
+non-parametric structural causal approach of Pearl (1995), and applies
+the WKM and AWKM estimators to the estimation of colon cancer survival
+under exposure/censoring rules in the UAW-GM Cohort.
 
 \hypertarget{methods}{%
 \section{Methods}\label{methods}}
@@ -350,11 +352,22 @@ WKM and AWKM estimators to the UAW-GM Cohort.
 \hypertarget{causal-model}{%
 \subsection{Causal model}\label{causal-model}}
 
-The UAW-GM Cohort data includes person-year level exposure, outcome, and
-covariate data starting three years after hire. To emulate the shape of
-the data for this longitudinal cohort, we consider 20 years of data over
-time indexed by years since hire. Notation representing the variables of
-interest are presented in Table \ref{tab:variables}.
+The UAW-GM Cohort data included person-year level exposure, outcome, and
+covariate data starting at hire. To emulate the shape of the data for
+this longitudinal cohort, we considered 20 years of data over time
+indexed by years since hire. Notation representing the variables of
+interest are presented in Table \ref{tab:variables}. The causal model
+represents hypothetical relationships between variables over time
+compatible with the theory underlying the HWSE in longitudinal
+occupational cohort studies. At each time point, the effect of
+cumulative exposure \(\bar A(t)\) on cancer incidence \(Y^(t)\) is
+confounded by a path through employment status \(N(t)\) and underlying
+health \(H(t)\) as well as the path through past exposure
+\(\bar A(t - 1)\) and vital status \(D(t)\). These paths follow
+straightforward logic: occupational exposure depends upon employment
+status and past exposure; mortality status is affected by past exposure
+and cancer history. Confounding by baseline covariates \(W\) is assumed
+throughout.
 
 \begin{table}
 \caption{Descriptions of variables.}\label{tab:variables}
@@ -384,8 +397,8 @@ exposure, \(\bar A_i(t)\) is the indicator of whether unit \(i\) was
 ever exposed through time \(t\). Note that true cancer status \(Y^*(t)\)
 not observed until \(t \ge R\), after the start of the registry. Call
 \(X\) the full data, where we have \(R = 0\) for all. In the observed
-data \(X^\text{obs}\), we cannot assume \(R = 0\) for all, and
-susceptibility \(S\) is not known:
+data \(X^\text{obs}\), we cannot assume \(R = 0\) for all;
+susceptibility \(S\) and underlying health status \(H\) are not known:
 \[X^\text{obs}_i(t) = \left(R_i, W_i, \bar N_i(t), \bar A_i(t), \bar a_i(t), \bar Y_i(t) \right).\]
 Under the causal model, we assume the following non-parametric
 structural equations: \[\begin{aligned}
@@ -429,6 +442,9 @@ equations above is presented in Figure \ref{fig:dag}.
 \node[state] (Y) [above right of=A, node distance = 3cm] {$Y^*(t)$};
 \node[state] (S) [above right of=D, node distance = 3cm] {$S$};
 %
+\path[->] (H0) edge (N0);
+\path[->] (N0) edge (A0);
+\path[->] (A0) edge [bend right=20] (Y0);
 \path[->] (H0) edge (H);
 \path[->] (W) edge [bend right=10] (N);
 \path[->] (N0) edge (N);
@@ -452,12 +468,27 @@ equations above is presented in Figure \ref{fig:dag}.
 \end{center}
 \end{figure}
 
+Figure \ref{fig:dag} clarifies our conceptualization of the HWSE. At
+each time point \(t\), the cumulative effect of exposure \(\bar A(t)\)
+on cancer incidence \(Y^*(t)\) is confounded by employment status
+\(N(t)\) through the backdoor path
+\(\bar A(t) \leftarrow N(t) \leftarrow H(t) \rightarrow Y^*(t)\). In the
+absence of observed data on health status \(H(t)\), an analyst may be
+tempted to condition on employment status \(N(t)\), but doing so would
+introduce collider bias while blocking the causal path between past
+exposure \(\bar A(t - 1)\) and cancer \(Y^*(t)\). Furthermore, an
+analysis starting at an arbitrary time point after the time origin
+(hire) would be tantamount to conditioning on those still alive at that
+time, which would also result in both collider bias and the conditioning
+on nodes on the causal path between the exposure and outcome of
+interest.
+
 \hypertarget{simulation}{%
 \subsection{Simulation}\label{simulation}}
 
-Parametric relationships between the variables were imposed in
-simulations. For the \(n = 50\,000\) units over \(T = 20\) years, we
-have:
+To generate data compatible with our structural causal model, we imposed
+parametric relationships between the variables. For the \(n = 50\,000\)
+units over \(T = 20\) years, we have:
 
 \begin{itemize}
 \tightlist
@@ -537,7 +568,7 @@ scenario, we have greater background cancer incidence by increasing
 \(\beta_0^Y\). The sets of parameters used in the five scenarios are
 presented in Table \ref{tab:params}.
 
-\begin{table}
+\begin{table}[h]
 \caption{Simulation parameters.}
 \label{tab:params}
 \begin{center}
@@ -574,36 +605,37 @@ $p_S$ & 0.10 & 0.10 & \textbf{0.20} & 0.10 & 0.10 \\
 \subsection{Interventions, potential outcomes, target parameters, and
 estimation}\label{interventions-potential-outcomes-target-parameters-and-estimation}}
 
-The substantive question of interest is the causal effect of
+The substantive question of interest was the causal effect of
 occupational exposure to MWF on cancer incidence risk. Since
 occupational MWF exposure occurs only when individuals are at work, we
-define dynamic exposure regimes that depend on employment status. Under
+defined dynamic exposure regimes that depend on employment status. Under
 rule \(a_0\), set \(D(t) = 0\), and set \(A(t) = 0\) while \(N(t) = 1\).
 Under rule \(a_1\), set \(D(t) = 0\), and set \(A(t) = 1\) while
-\(N(t) = 1\). Under both rules, we prevent censoring by death as if it
-were intervenable. The causal effect is defined by contrasting the
+\(N(t) = 1\). Under both rules, we prevented censoring by death as if it
+were intervenable. The causal effect was defined by contrasting the
 survival function \(S_{a_1}(t) = 1 - \E{Y_{a_1}(t)}\) under rule \(a_1\)
 to \(S_{a_0}(t) = 1 - \E{Y_{a_0}(t)}\) that under rule \(a_0\). Note
-that this causal estimand is defined over \emph{a priori
+that this causal estimand was defined over \emph{a priori
 counterfactuals} not observable in the real world (Frangakis and Rubin
 2002). This approach is standard in epidemiologic studies, however.
 
 The survival function expresses the probability that a person following
 rule \(a\) is cancer-free at the end of time point \(t\). The expected
 time until cancer under rule \(a\) is
-\(\mu_{a} = \sum_0^K S_{a}(t) \, dt\). Our causal estimand is summary
-measure \(\psi = \mu_{a_1} - \mu_{a_0}\), the difference in expected
-time until event under two different interventions over 20 years of
-follow-up under five different data generating scenarios. Bias will be
-evaluated by comparing estimates of \(\psi\) to its true value in 250
-simulations per scenario (the original analysis performed 500). The true
-value will be calculated by simulating the full data for five hundred
-thousand individuals (the original analysis used one million) with rules
-\(a_0\) and \(a_1\) applied deterministically. Estimates of \(\psi\)
-will be obtained by first estimating the survival curves \(S_a(t)\)
-using two estimators: the inverse probability weighted Kaplan-Meier
-estimator (WKM) and the Aalen-filtered WKM (AWKM). These survival
-estimators are detailed in the following section.
+\(\mu_{a} = \sum_0^K S_{a}(t) \, dt\). The parameter used in the
+estimation of bias was the summary measure
+\(\psi = \mu_{a_1} - \mu_{a_0}\), the difference in expected time until
+event under two different interventions over 20 years of follow-up under
+five different data generating scenarios. Bias was evaluated by
+comparing estimates of \(\psi\) to its true value in 250 simulations per
+scenario (the original analysis performed 500). The true value was
+calculated by simulating the full data for five hundred thousand
+individuals (the original analysis used one million) with rules \(a_0\)
+and \(a_1\) applied deterministically. Estimates of \(\psi\) were
+obtained by first estimating the survival curves \(S_a(t)\) using two
+estimators: the inverse probability weighted Kaplan-Meier estimator
+(WKM) and the Aalen-filtered WKM (AWKM). These survival estimators are
+detailed in the following section.
 
 \hypertarget{kaplan-meier-estimator-and-extensions}{%
 \subsection{Kaplan-Meier estimator and
@@ -701,6 +733,8 @@ known.
 \node[state] (Y) [above right of=A, node distance = 3cm] {$Y^*(t)$};
 \node[state] (S) [above right of=D, node distance = 3cm] {$S$};
 %
+\path[->] (H0) edge (N0);
+\path[->] (N0) edge (A0);
 \path[->] (H0) edge (H);
 \path[->] (N0) edge (N);
 \path[->] (H) edge (N);
@@ -734,6 +768,8 @@ known.
 \node[state] (Y) [above right of=A, node distance = 3cm] {$Y^*(t)$};
 \node[state] (S) [above right of=D, node distance = 3cm] {$S$};
 %
+\path[->] (H0) edge (N0);
+\path[->] (N0) edge (A0);
 \path[->] (H0) edge (H);
 %\path[->] (W) edge [bend right=10] (N);
 \path[->] (N0) edge (N);
@@ -767,16 +803,16 @@ logistic regressions at each time point \(t = 1, \ldots 20\):
     A(t) = 1
     \mid W,\ \bar A(t - 1),\ D(t - 1) = 0,\ N(t) = 1
     }\right)
-& = \alpha_0 + W \alpha_1 + \bar A(t - 1) \alpha_2 \\
+& = \alpha_0 + W \alpha_1 + A(t - 1) \alpha_2 \\
 \text{logit} \left(\Prob{
     D(t) = 1
     \mid W,\ D(t - 1) = 0,\ Y(t - 1) = 0,\ \bar A(t - 1)}\right)
     & = \beta_0 + W \beta_1 + \bar A(t - 1) \beta_2
-\end{aligned}\] The first will be fitted on data for those alive and at
-work at time \(t\). The second will be among those alive and (observed
-to be) cancer-free. For each unit at time \(t\), the weight will be
-calculated by taking the inverse of the cumulative probability of
-following the exposure rule and remaining uncensored: \[\hat w_{a} (t) =
+\end{aligned}\] The first was fit on data for those alive and at work at
+time \(t\). The second was among those alive and (observed to be)
+cancer-free. For each unit at time \(t\), the weight was calculated by
+taking the inverse of the cumulative probability of following the
+exposure rule and remaining uncensored: \[\hat w_{a} (t) =
     \left[
     \prod^t_{j = 1}
     \begin{aligned}
@@ -793,11 +829,11 @@ following the exposure rule and remaining uncensored: \[\hat w_{a} (t) =
 Figure \ref{fig:survival} presents the true survival curves as well as
 the WKM and AWKM survival curves averaged over 250 replications for each
 intervention rule and scenario. Qualitatively, the WKM estimator
-consistently over-estimates survival whereas the the AWKM survival curve
-is much closer to the truth. The bias of the AWKM survival estimate
-appears to be larger earlier in follow-up and smaller as follow-up
-extends forward. The bias of both the the WKM and the AWKM survival
-curves appears largest in Scenario 5.
+consistently over-estimated survival whereas the the AWKM survival curve
+was much closer to the truth. The bias of the AWKM survival estimator
+appeared to be larger in earlier follow-up and smaller for later
+follow-up time points. The bias of both the the WKM and the AWKM
+estimators appeared largest in Scenario 5.
 
 \begin{figure}
 \caption{Cancer-free survival over time since hire in five simulation scenarios. The true (discrete) survival curve is represented by the solid lines. The average inverse probability weighted Kaplan-Meier (WKM) survival curve is represented by the dashed-line with short dashes. The average Aalen-filtered inverse probability weighted Kaplan-Meier (AWKM) survival curve is represented by the dashed-line with long dashes. Estimated survival curves were averaged over 250 replicates. Salmon color indicates survival and survival estimates under rule $a_0$ when workers are always unexposed. Cyan color indicates those under rule $a_1$ when workers are always exposed while employed.}
@@ -813,20 +849,20 @@ survival times under each intervention rule and scenario. Table
 rule \(a_1\) to rule \(a_0\). Table \ref{tab:bias} presents estimates of
 the bias of the WKM and AWKM estimators for \(\psi\), the difference in
 average cancer-free survival time over 20 years of follow-up. These
-numeric results are consistent with the qualitative interpretations of
-Figure \ref{fig:survival}. The WKM estimator over-estimates the
+numeric results were consistent with the qualitative interpretations of
+Figure \ref{fig:survival}. The WKM estimator over-estimated the
 difference in cancer-free survival time, resulting in bias toward the
 null, whereas the AWKM estimator under-estimates the cancer-free
 survival, resulting in bias away from the null. In every scenario, the
-bias of the WKM-derived contrast is several times larger in magnitude
-than that of the AWKM-derived contrast. The bias of both estimators is
+bias of the WKM-derived contrast was several times larger in magnitude
+than that of the AWKM-derived contrast. The bias of both estimators was
 greatest for Scenario 5.
 
-The qualitative results here are consistent with those of Izano (2017).
-However, true and estimated survival in the present analysis is larger
+The qualitative results here were consistent with those of Izano (2017).
+However, true and estimated survival in the present analysis was larger
 than those found previously. Furthermore, the true and estimator average
-mean differences in survival are smaller in magnitude in the present
-case. The magnitudes of the bias estimates are also smaller.
+mean differences in survival were smaller in magnitude in the present
+case. The magnitudes of the bias estimates were also smaller.
 
 \begin{table}[H]
 \centering
@@ -837,12 +873,12 @@ case. The magnitudes of the bias estimates are also smaller.
 Rule & Estimator & Scenario 1 & Scenario 2 & Scenario 3 & Scenario 4 & Scenario 5 \\ 
   \midrule
 $a_0$ & Truth & 19.08 & 19.10 & 19.10 & 18.02 & 17.83 \\ 
-   & WKM & 19.52 & 19.51 & 19.53 & 18.92 & 18.90 \\ 
-   & AWKM & 19.02 & 19.00 & 19.02 & 17.79 & 17.72 \\ 
+   & WKM & 19.52 & 19.51 & 19.52 & 18.91 & 18.90 \\ 
+   & AWKM & 19.01 & 19.00 & 19.01 & 17.80 & 17.71 \\ 
    \midrule
 $a_1$ & Truth & 18.80 & 18.79 & 18.76 & 17.54 & 17.29 \\ 
-   & WKM & 19.39 & 19.37 & 19.37 & 18.68 & 18.62 \\ 
-   & AWKM & 18.70 & 18.67 & 18.67 & 17.30 & 17.07 \\ 
+   & WKM & 19.41 & 19.39 & 19.39 & 18.68 & 18.67 \\ 
+   & AWKM & 18.76 & 18.76 & 18.74 & 17.30 & 17.22 \\ 
    \bottomrule
 \end{tabular}
 \end{table}
@@ -855,8 +891,8 @@ $a_1$ & Truth & 18.80 & 18.79 & 18.76 & 17.54 & 17.29 \\
 Estimator & Scenario 1 & Scenario 2 & Scenario 3 & Scenario 4 & Scenario 5 \\ 
   \midrule
 Truth & -0.28 & -0.31 & -0.34 & -0.48 & -0.54 \\ 
-  WKM & -0.14 & -0.15 & -0.15 & -0.23 & -0.28 \\ 
-  AWKM & -0.31 & -0.33 & -0.35 & -0.50 & -0.64 \\ 
+  WKM & -0.11 & -0.12 & -0.13 & -0.23 & -0.23 \\ 
+  AWKM & -0.25 & -0.24 & -0.27 & -0.50 & -0.50 \\ 
    \bottomrule
 \end{tabular}
 \end{table}
@@ -868,11 +904,192 @@ Truth & -0.28 & -0.31 & -0.34 & -0.48 & -0.54 \\
   \toprule
 Estimator & Scenario 1 & Scenario 2 & Scenario 3 & Scenario 4 & Scenario 5 \\ 
   \midrule
-WKM & 0.14 & 0.16 & 0.19 & 0.25 & 0.26 \\ 
-  AWKM & -0.03 & -0.02 & -0.01 & -0.02 & -0.10 \\ 
+WKM & 0.17 & 0.19 & 0.21 & 0.25 & 0.31 \\ 
+  AWKM & 0.03 & 0.07 & 0.07 & -0.02 & 0.04 \\ 
    \bottomrule
 \end{tabular}
 \end{table}
+
+\hypertarget{application-to-the-uaw-gm-cohort}{%
+\section{Application to the UAW-GM
+Cohort}\label{application-to-the-uaw-gm-cohort}}
+
+In the simulation study, we showed that under several scenarios
+compatible with our hypothetical causal structure, the AWKM survival
+estimator had small bias compared to the WKM estimator. The bias was
+smaller when the cumulative incidence of the outcome was low and at
+later follow-up time points. Next, we estimated cancer-free survival in
+a real-world context. Using data from the UAW-GM Cohort study, we
+followed \(38\,553\) individuals starting from hire to 40 years after
+hire for incidence of colon cancer. This duration of follow-up spans the
+vast majority of individuals' working lifetimes. As in the simulation,
+the UAW-GM data were longitudinal data with baseline covariates,
+time-varying covariates, and a survival outcome.
+
+The exposures of interest were MWF of three types: straight, soluble,
+and synthetic (Byers 2006; F. Mirer 2003; F. E. Mirer 2010). Straight
+MWFs are hydrocarbon-based fluids whose use became widespread by the
+1920s. They continue to be widely used because of their simple
+formulation. In straight MWFs, hydrocarbons of different lengths are
+mixed together with other additives to attain different properties.
+Straight MWFs contain polycyclic aromatic hydrocarbons, long known to be
+carcinogenic (IARC 1973). Soluble oils are water-based oil emulsions
+first introduced in response to rising oil prices. They now make up the
+largest market share of MWFs (Childers 2006). Soluble oils are
+vulnerable to microbial contamination, so the addition of biocides is
+needed. However, their high lubricity makes soluble MWFs the most
+popular fluid type. Synthetic MWFs have the best toxicological profile,
+have no oil, and have a higher resistance to microbial growth. They were
+introduced into the MWF market in the second half of the 20th C., but
+fail to out-perform soluble MWFs in metalworking applications. Soluble
+and synthetic MWFs contain biocides, corrosion inhibitors, and
+chlorinated compounds, some classified as carcinogenic by the IARC (IARC
+1987).
+
+The outcome of interest was colon cancer incidence. There is little past
+research linking colon cancer to MWF exposures, but there is some
+evidence suggesting that straight MWFs cause colon cancer (Izano et al.
+2019). We obtained cancer incidence data via linkage to the Michigan
+Cancer Registry, which recorded cancer incidence cases starting on
+January 1, 1985. The cohort is comprised of individuals hired between
+1938 and 1985. Cancer-free survival to the start of the registry was a
+left-filtering process possibly in the presence of the HWSE as
+investigated in the simulations. Over the 40 year follow-up period,
+vital status was obtained through the Social Security Administration,
+the National Death Index, as well as records provided by the UAW.
+Baseline confounders included race, sex, plant, and year of hire.
+Time-varying confounders included age, cumulative time off, and exposure
+to the metalworking fluids not under study. These terms were included in
+the estimation of both the treatment and censoring mechanisms, which
+were estimated with stratification on every year of follow-up. The
+exposure rules of interest were identical to those in the simulation
+study: \(a_0\) never exposed and \(a_1\) always exposed while at work.
+We assumed that the effect of exposure on health status, mortality,
+cancer incidence, etc occurs after a lag of 15 years. Similarly, we
+assumed that the effects of cumulative time off occur after a 15 year
+lag. Counterfactual survival under rules \(a_0\) and \(a_1\) were
+estimated using the WKM and AWKM estimators. Summary statistics for the
+full study population and the colon cancer cases are presented in Table
+\ref{tab:popchar}.
+
+\begin{table}[h]
+\caption{Study population characteristics.}
+\label{tab:popchar}
+\begin{center}\begin{tabular}{lrlrl}
+\toprule
+&       \multicolumn{2}{c}{Full cohort}       & \multicolumn{2}{c}{Colon cancer cases}      \\
+\midrule
+$n$ (person-years) 
+            &     38 553 & (1 402 372)       & 267 & (9 635)        \\
+Race (\%) \\
+\hspace{1.5em} Black   &      7 133 & (18.5)                &  83 & (31.1)          \\
+\hspace{1.5em} White   &     31 420 & (81.5)                & 184 & (68.9)          \\
+Sex (\%) \\
+\hspace{1.5em} Female  &      4 757 & (12.3)                &  49 & (18.4)      \\
+\hspace{1.5em} Male    &     33 796 & (87.7)                & 218 & (81.6)      \\
+Plant (\%) \\
+\hspace{1.5em} Plant 1 &      9 092 & (23.6)                &  66 & (24.7)      \\
+\hspace{1.5em} Plant 2 &     17 090 & (44.3)                & 107 & (40.1)      \\
+\hspace{1.5em} Plant 3 &     12 371 & (32.1)                &  94 & (35.2)          \\
+\midrule
+Ever exposed to MWF (\%)
+                        &     22193 & (57.6)                & 104 & (39.0)          \\
+Year of hire (mean (\textsc{sd}))
+                        &     1963 & (11.62)            & 1968 & (8.79)         \\
+Age (mean (\textsc{sd}))
+                        &     63.38 & (9.08)                & 67.78 & (9.27)        \\
+Cumulative time off (mean (\textsc{sd}))
+                        &     0.04 & (0.14)               & 0.05 & (0.15)       \\
+\bottomrule
+\end{tabular}\end{center}
+\end{table}
+
+\hypertarget{assumptions}{%
+\subsection{Assumptions}\label{assumptions}}
+
+Since we are working with observational data, the evaluation of the
+no-interference, causal consistency, ignorability, and positivity
+assumptions are critical for causal inference. The stability of our
+estimation depends on positivity, which we assessed qualitatively by
+examining the distribution of the weights. The no-interference
+assumption may be problematized by the fact that there were a finite
+number of job types in the factory setting. If one worker operates a
+particular metalworking machine, then the the other workers are not able
+to operate that machine at that time. Instead, they may be assigned to
+assembly tasks, which have lower MWF exposure opportunities. That said,
+since these factories were quite large, there may be approximate
+independence. The consistency assumption is also problematic. The MWFs
+of interest are complex chemical mixtures whose composition changes by
+design and by nature. Over the last several decades, the formulation of
+MWFs has changed significantly in reaction to performance needs and
+toxicity concerns (F. Mirer 2003; Byers 2006). The composition of MWFs
+also undergoes unintentional changes because of the nature of their use:
+MWFs are often applied in contexts where contamination by other
+substances and microbes is possible and chemical changes due to heat and
+pressure are likely. Indeed, there are substantial concerns over the
+carcinogenicity of the chemical species formed in the MWF mixtures that
+were not originally added (Hidajat et al. 2020). Concerns regarding the
+consistency assumption may be abrogated in part by adequate adjustment
+for secular and factory-level characteristics.
+
+Another key assumption meriting discussion is that of conditional
+ignorability. In order to achieve identification, even in the absence of
+left filtering, we need to have conditionally ignorable future exposure
+status and ignorable future censoring status at each time point given
+past data. In occupational cohorts, employment status and health history
+are strong predictors of future death (Häfner 1987; Halliday 2014;
+Laliotis and Stavropoulou 2018). Logically, major causes of death first
+act through employment status before they precipitate death. This
+dynamic is actually a key component in the setup for HWSE. We are
+therefore relatively confident that conditional ignorability of
+censoring due to death is attained given covariate, exposure, and cancer
+history. Our confidence in the conditional ignorability of exposure
+given history was not as strong. In particular, workers may be assigned
+to certain tasks based on their specific skills and knowledge, which may
+be associated with structural privileges that confer a lower risk of
+deleterious health outcomes. The potential magnitude of this
+uncontrolled confounding is likely to be limited, however. The education
+level of the workers in the cohort was homogeneous, and all cohort
+members were members of the UAW union, which had uniform procedures in
+place for equitable access to training, wages, and career advancement
+(Harbison 1950; Barnard 2005). The presence of UAW policies support the
+assertion that given time since hire, job types (and therefore
+exposures) were randomly allocated.
+
+\hypertarget{results-1}{%
+\subsection{Results}\label{results-1}}
+
+\begin{itemize}
+\tightlist
+\item
+  Foo
+\end{itemize}
+
+\hypertarget{discussion}{%
+\section{Discussion}\label{discussion}}
+
+\begin{itemize}
+\tightlist
+\item
+  FU in GM is much longer than 20 years
+\item
+  Exclusion restriction on \(H\) so that its parents do not include
+  \(A\) is not necessary for identification in full data
+\item
+  Exclusion restriction on \(D\) so that its parents do not include
+  \(H\) not needed if \(H\) is observed and conditioned upon
+\item
+  Not clear if these were for convenience or what
+\item
+  What if we increase FU? Lags?
+\item
+  Greater fineness in exposure definition? Different interventions?
+\item
+  No way to verify to what extent the simulation informs the real data
+  generating system
+\item
+  Model specification, double robustness
+\end{itemize}
 
 \newpage
 
@@ -893,8 +1110,16 @@ Arrighi, H. Michael, and Irva Hertz-Picciotto. 1994. {``The Evolving
 Concept of the Healthy Worker Survivor Effect.''} \emph{Epidemiology} 5
 (2): 189--96. \url{http://www.jstor.org/stable/3702361}.
 
+\leavevmode\hypertarget{ref-Barnard_2005}{}%
+Barnard, John. 2005. \emph{American Vanguard: The United Auto Workers
+During the Reuther Years, 1935-1970}. Wayne State University Press.
+
 \leavevmode\hypertarget{ref-Byers_2006}{}%
 Byers, Jerry P. 2006. \emph{Metalworking Fluids}. CRC Press.
+
+\leavevmode\hypertarget{ref-Childers_2006}{}%
+Childers, Jean. 2006. {``The Chemistry of Metalworking Fluids.''} In
+\emph{Metalworking Fluids}. CRC Press.
 
 \leavevmode\hypertarget{ref-Eisen_2001}{}%
 Eisen, Ellen A, Judith Bardin, Rebecca Gore, Susan R Woskie, Marilyn F
@@ -926,6 +1151,42 @@ Exposure to Synthetic Metalworking Fluid and Biocides: Controlling for
 the Healthy Worker Survivor Effect.''} \emph{Occupational and
 Environmental Medicine} 75 (10): 730--35.
 
+\leavevmode\hypertarget{ref-Halliday_2014}{}%
+Halliday, Timothy J. 2014. {``Unemployment and Mortality: Evidence from
+the PSID.''} \emph{Soc Sci Med} 113 (July): 15--22.
+\url{https://doi.org/10.1016/j.socscimed.2014.04.038}.
+
+\leavevmode\hypertarget{ref-Harbison_1950}{}%
+Harbison, Frederick H. 1950. {``The General Motors-United Auto Workers
+Agreement of 1950.''} \emph{Journal of Political Economy} 58 (5):
+397--411.
+
+\leavevmode\hypertarget{ref-Hafner_1987}{}%
+Häfner, H. 1987. {``Unemployment and Health.''} \emph{Dtsch Med
+Wochenschr} 112 (37): 1428--32.
+\url{https://doi.org/10.1055/s-2008-1068265}.
+
+\leavevmode\hypertarget{ref-Hidajat_2020}{}%
+Hidajat, Mira, Damien Martin McElvenny, Peter Ritchie, Andrew Darnton,
+William Mueller, Raymond M Agius, John W Cherrie, and Frank de Vocht.
+2020. {``Lifetime Cumulative Exposure to Rubber Dust, Fumes and
+n-Nitrosamines and Non-Cancer Mortality: A 49-Year Follow-up of UK
+Rubber Factory Workers.''} \emph{Occup Environ Med} 77 (5): 316--23.
+\url{https://doi.org/10.1136/oemed-2019-106269}.
+
+\leavevmode\hypertarget{ref-IARC_1973}{}%
+IARC. 1973. \emph{IARC Monographs on the Evaluation of Carcinogenic Risk
+of the Chemical to Man: Certain Polycyclic Aromatic Hydrocarbons and
+Heterocyclic Compounds}. Vol. 3. World Health Organization International
+Agency for Research on Cancer.
+
+\leavevmode\hypertarget{ref-IARC_1987}{}%
+---------. 1987. \emph{IARC Monographs on the Evaluation of the
+Carcinogenic Risk of Chemicals to Humans. Overall Evaluations of
+Carcinogenicity: An Updating of IARC Monographs, Volumes 1 to 42}.
+\emph{World Health Organization}. Vol. 7. World Health Organization
+International Agency for Research on Cancer.
+
 \leavevmode\hypertarget{ref-Izano_2017_thesis}{}%
 Izano, Monika A. 2017. {``Estimating Causal Effects of Occupational
 Exposures.''} PhD thesis, University of California, Berkeley; University
@@ -941,6 +1202,23 @@ Longitudinal Targeted Minimum Loss-Based Estimation.''}
 Kaplan, Edward L, and Paul Meier. 1958. {``Nonparametric Estimation from
 Incomplete Observations.''} \emph{Journal of the American Statistical
 Association} 53 (282): 457--81.
+
+\leavevmode\hypertarget{ref-Laliotis_2018}{}%
+Laliotis, Ioannis, and Charitini Stavropoulou. 2018. {``Crises and
+Mortality: Does the Level of Unemployment Matter?''} \emph{Soc Sci Med}
+214 (October): 99--109.
+\url{https://doi.org/10.1016/j.socscimed.2018.08.016}.
+
+\leavevmode\hypertarget{ref-Mirer_2003}{}%
+Mirer, Franklin. 2003. {``Updated Epidemiology of Workers Exposed to
+Metalworking Fluids Provides Sufficient Evidence for Carcinogenicity.''}
+\emph{Applied Occupational and Environmental Hygiene} 18 (11): 902--12.
+
+\leavevmode\hypertarget{ref-Mirer_2010}{}%
+Mirer, Franklin E. 2010. {``New Evidence on the Health Hazards and
+Control of Metalworking Fluids Since Completion of the OSHA Advisory
+Committee Report.''} \emph{American Journal of Industrial Medicine} 53
+(8): 792--801.
 
 \leavevmode\hypertarget{ref-Naimi_2013}{}%
 Naimi, Ashley I, Stephen R Cole, Michael G Hudgens, M Alan Brookhart,

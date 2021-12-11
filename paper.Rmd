@@ -46,6 +46,12 @@ library(here)
 ```{r child = 'reports/03-results.rmd'}
 ```
 
+```{r child = 'reports/04-gm.rmd'}
+```
+
+```{r child = 'reports/05-discussion.rmd'}
+```
+
 
 \newpage
 

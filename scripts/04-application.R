@@ -82,9 +82,9 @@ cohort_analytic[,`:=`(
 ), studyno]
 # Get exposure history
 cohort_analytic[,`:=`(
-	barStraight = shift(as.integer(cumsum(straight) > 0), 16, 0),
-	barSoluble = shift(as.integer(cumsum(Soluble) > 0), 16, 0),
-	barSynthetic = shift(as.integer(cumsum(Synthetic) > 0), 16, 0),
+	barStraight = shift(Straight, 16, 0),
+	barSoluble = shift(Soluble, 16, 0),
+	barSynthetic = shift(Synthetic, 16, 0),
 	N = shift(N, 15, 0)
 ), studyno]
 

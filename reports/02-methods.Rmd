@@ -21,8 +21,8 @@ if (!"mytheme" %in% ls()) {
 
 ## Causal model
 
-The UAW-GM Cohort data includes person-year level exposure, outcome, and covariate data starting three years after hire. To emulate the shape of the data for this longitudinal cohort, we consider 20 years of data over time indexed by years since hire. Notation representing the variables of interest are presented in Table \ref{tab:variables}.
-
+The UAW-GM Cohort data included person-year level exposure, outcome, and covariate data starting at hire. To emulate the shape of the data for this longitudinal cohort, we considered 20 years of data over time indexed by years since hire. Notation representing the variables of interest are presented in Table \ref{tab:variables}. The causal model represents hypothetical relationships between variables over time compatible with the theory underlying the HWSE in longitudinal occupational cohort studies. At each time point, the effect of cumulative exposure $\bar A(t)$ on cancer incidence $Y^(t)$ is confounded by a path through employment status $N(t)$ and underlying health $H(t)$ as well as the path through past exposure $\bar A(t - 1)$ and vital status $D(t)$. These paths follow straightforward logic: occupational exposure depends upon employment status and past exposure; mortality status is affected by past exposure and cancer history. Confounding by baseline covariates $W$ is assumed throughout.
+ 
 \begin{table}
 \caption{Descriptions of variables.}\label{tab:variables}
 \begin{center}
@@ -45,7 +45,7 @@ The UAW-GM Cohort data includes person-year level exposure, outcome, and covaria
 
 Assume we have $n = 50\,000$ iid units in $X$ with
 $$X_i(t) = \left(R_i = 0, W_i, S_i, \bar H_i(t), \bar N_i(t), \bar A_i(t), \bar a_i(t), \bar Y^*_i(t) = \bar Y_i(t) \right).$$
-The bar notation to indicates variable history where $\bar X_i(t) = \left(X_i(k)\right)_{k = 1}^t$. In the case of exposure, $\bar A_i(t)$ is the indicator of whether unit $i$ was ever exposed through time $t$. Note that true cancer status $Y^*(t)$ not observed until $t \ge R$, after the start of the registry. Call $X$ the full data, where we have $R = 0$ for all. In the observed data $X^\text{obs}$, we cannot assume $R = 0$ for all, and susceptibility $S$ is not known:
+The bar notation to indicates variable history where $\bar X_i(t) = \left(X_i(k)\right)_{k = 1}^t$. In the case of exposure, $\bar A_i(t)$ is the indicator of whether unit $i$ was ever exposed through time $t$. Note that true cancer status $Y^*(t)$ not observed until $t \ge R$, after the start of the registry. Call $X$ the full data, where we have $R = 0$ for all. In the observed data $X^\text{obs}$, we cannot assume $R = 0$ for all; susceptibility $S$ and underlying health status $H$ are not known:
 $$X^\text{obs}_i(t) = \left(R_i, W_i, \bar N_i(t), \bar A_i(t), \bar a_i(t), \bar Y_i(t) \right).$$
 Under the causal model, we assume the following non-parametric structural equations:
 $$\begin{aligned}
@@ -80,6 +80,9 @@ The exogenous variables (errors) $U = \left( U_R, U_W, U_S, U_{H(t)}, U_{N(t)}, 
 \node[state] (Y) [above right of=A, node distance = 3cm] {$Y^*(t)$};
 \node[state] (S) [above right of=D, node distance = 3cm] {$S$};
 %
+\path[->] (H0) edge (N0);
+\path[->] (N0) edge (A0);
+\path[->] (A0) edge [bend right=20] (Y0);
 \path[->] (H0) edge (H);
 \path[->] (W) edge [bend right=10] (N);
 \path[->] (N0) edge (N);
@@ -103,9 +106,11 @@ The exogenous variables (errors) $U = \left( U_R, U_W, U_S, U_{H(t)}, U_{N(t)}, 
 \end{center}
 \end{figure}
 
+Figure \ref{fig:dag} clarifies our conceptualization of the HWSE. At each time point $t$, the cumulative effect of exposure $\bar A(t)$ on cancer incidence $Y^*(t)$ is confounded by employment status $N(t)$ through the backdoor path $\bar A(t) \leftarrow N(t) \leftarrow H(t) \rightarrow Y^*(t)$. In the absence of observed data on health status $H(t)$, an analyst may be tempted to condition on employment status $N(t)$, but doing so would introduce collider bias while blocking the causal path between past exposure $\bar A(t - 1)$ and cancer $Y^*(t)$. Furthermore, an analysis starting at an arbitrary time point after the time origin (hire) would be tantamount to conditioning on those still alive at that time, which would also result in both collider bias and the conditioning on nodes on the causal path between the exposure and outcome of interest.
+
 ## Simulation
 
-Parametric relationships between the variables were imposed in simulations. For the $n = 50\,000$ units over $T = 20$ years, we have:
+To generate data compatible with our structural causal model, we imposed parametric relationships between the variables. For the $n = 50\,000$ units over $T = 20$ years, we have:
 
 - $U_j \overset{\text{iid}}{\sim} \text{uniform}\,[0,1]$ for all $j$
 - In full data $R = 0$ otherwise $R \sim \text{uniform}\,[0, 30]$
@@ -157,7 +162,7 @@ Parametric relationships between the variables were imposed in simulations. For 
 
 Five sets of data were generated using these equations to represent five scenarios. Scenario 1 represents the base case where 10% of workers are susceptible to exposure-related effects, the odds ratio of mortality each additional year following cancer diagnosis is about 1.6, and there is moderate time-varying confounding by health status. In scenario 2, we have greater cancer-related mortality by increasing $\beta_{\bar Y}^D$. In scenario 3, we increase $p_S$, the proportion of the study population susceptible to the carcinogenic effects of MWF exposure. In scenario 4, we consider greater time-varying confounding by health status by increasing $\beta_H^N$ and $\beta_H^Y$. In the last scenario, we have greater background cancer incidence by increasing $\beta_0^Y$. The sets of parameters used in the five scenarios are presented in Table \ref{tab:params}.
 
-\begin{table}
+\begin{table}[h]
 \caption{Simulation parameters.}
 \label{tab:params}
 \begin{center}
@@ -223,9 +228,9 @@ xtable(sim_param.tab, align = c("c", rep("r", ncol(sim_param.tab))))
 
 ## Interventions, potential outcomes, target parameters, and estimation
 
-The substantive question of interest is the causal effect of occupational exposure to MWF on cancer incidence risk. Since occupational MWF exposure occurs only when individuals are at work, we define dynamic exposure regimes that depend on employment status. Under rule $a_0$, set $D(t) = 0$, and set $A(t) = 0$ while $N(t) = 1$. Under rule $a_1$, set $D(t) = 0$, and set $A(t) = 1$ while $N(t) = 1$. Under both rules, we prevent censoring by death as if it were intervenable. The causal effect is defined by contrasting the survival function $S_{a_1}(t) = 1 - \E{Y_{a_1}(t)}$ under rule $a_1$ to $S_{a_0}(t) = 1 - \E{Y_{a_0}(t)}$ that under rule $a_0$. Note that this causal estimand is defined over _a priori counterfactuals_ not observable in the real world [@Frangakis_2002]. This approach is standard in epidemiologic studies, however.
+The substantive question of interest was the causal effect of occupational exposure to MWF on cancer incidence risk. Since occupational MWF exposure occurs only when individuals are at work, we defined dynamic exposure regimes that depend on employment status. Under rule $a_0$, set $D(t) = 0$, and set $A(t) = 0$ while $N(t) = 1$. Under rule $a_1$, set $D(t) = 0$, and set $A(t) = 1$ while $N(t) = 1$. Under both rules, we prevented censoring by death as if it were intervenable. The causal effect was defined by contrasting the survival function $S_{a_1}(t) = 1 - \E{Y_{a_1}(t)}$ under rule $a_1$ to $S_{a_0}(t) = 1 - \E{Y_{a_0}(t)}$ that under rule $a_0$. Note that this causal estimand was defined over _a priori counterfactuals_ not observable in the real world [@Frangakis_2002]. This approach is standard in epidemiologic studies, however.
 
-The survival function  expresses the probability that a person following rule $a$ is cancer-free at the end of time point $t$. The expected time until cancer under rule $a$ is $\mu_{a} = \sum_0^K S_{a}(t) \, dt$. Our causal estimand is summary measure $\psi = \mu_{a_1} - \mu_{a_0}$, the difference in expected time until event under two different interventions over 20 years of follow-up under five different data generating scenarios. Bias will be evaluated by comparing estimates of $\psi$ to its true value in 250 simulations per scenario (the original analysis performed 500). The true value will be calculated by simulating the full data for five hundred thousand individuals (the original analysis used one million) with rules $a_0$ and $a_1$ applied deterministically. Estimates of $\psi$ will be obtained by first estimating the survival curves $S_a(t)$ using two estimators: the inverse probability weighted Kaplan-Meier estimator (WKM) and the Aalen-filtered WKM (AWKM). These survival estimators are detailed in the following section.
+The survival function  expresses the probability that a person following rule $a$ is cancer-free at the end of time point $t$. The expected time until cancer under rule $a$ is $\mu_{a} = \sum_0^K S_{a}(t) \, dt$. The parameter used in the estimation of bias was the summary measure $\psi = \mu_{a_1} - \mu_{a_0}$, the difference in expected time until event under two different interventions over 20 years of follow-up under five different data generating scenarios. Bias was evaluated by comparing estimates of $\psi$ to its true value in 250 simulations per scenario (the original analysis performed 500). The true value was calculated by simulating the full data for five hundred thousand individuals (the original analysis used one million) with rules $a_0$ and $a_1$ applied deterministically. Estimates of $\psi$ were obtained by first estimating the survival curves $S_a(t)$ using two estimators: the inverse probability weighted Kaplan-Meier estimator (WKM) and the Aalen-filtered WKM (AWKM). These survival estimators are detailed in the following section.
 
 ## Kaplan-Meier estimator and extensions
 
@@ -305,6 +310,8 @@ Graphical representations of the first and second components of the ignorability
 \node[state] (Y) [above right of=A, node distance = 3cm] {$Y^*(t)$};
 \node[state] (S) [above right of=D, node distance = 3cm] {$S$};
 %
+\path[->] (H0) edge (N0);
+\path[->] (N0) edge (A0);
 \path[->] (H0) edge (H);
 \path[->] (N0) edge (N);
 \path[->] (H) edge (N);
@@ -338,6 +345,8 @@ Graphical representations of the first and second components of the ignorability
 \node[state] (Y) [above right of=A, node distance = 3cm] {$Y^*(t)$};
 \node[state] (S) [above right of=D, node distance = 3cm] {$S$};
 %
+\path[->] (H0) edge (N0);
+\path[->] (N0) edge (A0);
 \path[->] (H0) edge (H);
 %\path[->] (W) edge [bend right=10] (N);
 \path[->] (N0) edge (N);
@@ -369,13 +378,13 @@ $$\begin{aligned}
 	A(t) = 1
 	\mid W,\ \bar A(t - 1),\ D(t - 1) = 0,\ N(t) = 1
 	}\right)
-& = \alpha_0 + W \alpha_1 + \bar A(t - 1) \alpha_2 \\
+& = \alpha_0 + W \alpha_1 + A(t - 1) \alpha_2 \\
 \text{logit} \left(\Prob{
 	D(t) = 1
 	\mid W,\ D(t - 1) = 0,\ Y(t - 1) = 0,\ \bar A(t - 1)}\right)
 	& = \beta_0 + W \beta_1 + \bar A(t - 1) \beta_2
 \end{aligned}$$
-The first will be fitted on data for those alive and at work at time $t$. The second will be among those alive and (observed to be) cancer-free. For each unit at time $t$, the weight will be calculated by taking the inverse of the cumulative probability of following the exposure rule and remaining uncensored:
+The first was fit on data for those alive and at work at time $t$. The second was among those alive and (observed to be) cancer-free. For each unit at time $t$, the weight was calculated by taking the inverse of the cumulative probability of following the exposure rule and remaining uncensored:
 $$\hat w_{a} (t) =
 	\left[
 	\prod^t_{j = 1}

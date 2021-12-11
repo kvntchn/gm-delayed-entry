@@ -20,7 +20,7 @@ library(stremr)
 get_estimates <- function(
 	scenario = 1,
 	a = 0,
-	g_a = "A ~ W + barA",
+	g_a = "A ~ W + shiftA",
 	g_d = "D ~ W + barA",
 	stratify = list(D = paste0("t == ", 1:20),
 									A = paste0("t == ", 1:20))
@@ -28,7 +28,10 @@ get_estimates <- function(
 	
 	# message("Simulating...")
 	sim.dt <- sim_data(scenario, a = a)
-	sim.dt[,`:=`(barA = shift(as.integer(cumsum(A) > 0), 1, 0)), id]
+	sim.dt[,`:=`(
+		shiftA = shift(A, 1, 0),
+		barA = shift(as.integer(cumsum(A) > 0), 1, 0)
+		), id]
 	
 	# Get rules
 	sim.dt[,`:=`(A_0 = 0, A_1 = N)]
