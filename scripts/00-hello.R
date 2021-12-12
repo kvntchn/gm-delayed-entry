@@ -28,5 +28,11 @@ if (!"cohort_analytic" %in% ls()) {
 		studyno]
 }
 
-cohort_analytic <- cohort_analytic[wh == 1 & nohist == 0 & yin.gm >= 1938]
+cohort_analytic[,`:=`(Plant = factor(plant))]
+cohort_analytic[,`:=`(plant = c(1:3)[which.max(table(Plant))]), studyno]
+cohort_analytic[, plant := as.numeric(plant)]
+			
+cohort_analytic <- cohort_analytic[
+	# plant %in% c(1,2) &
+	wh == 1 & nohist == 0 & yin.gm >= 1938]
 

@@ -343,8 +343,11 @@ when exposure and censoring were controlled deterministically.
 The present project replicates the simulation and bias analyses
 presented in Chapter 3 of Izano (2017), embeds the problem in the
 non-parametric structural causal approach of Pearl (1995), and applies
-the WKM and AWKM estimators to the estimation of colon cancer survival
-under exposure/censoring rules in the UAW-GM Cohort.
+the WKM and AWKM estimators to the estimation of digestive-system
+cancer-free survival under exposure/censoring rules in the UAW-GM
+Cohort. The \texttt{stremr} package was used to estimate the WKM and
+AWKM survival curves in both the simulation and the applied analyses
+(Sofrygin, van der Laan, and Neugebauer 2021).
 
 \hypertarget{methods}{%
 \section{Methods}\label{methods}}
@@ -832,8 +835,9 @@ intervention rule and scenario. Qualitatively, the WKM estimator
 consistently over-estimated survival whereas the the AWKM survival curve
 was much closer to the truth. The bias of the AWKM survival estimator
 appeared to be larger in earlier follow-up and smaller for later
-follow-up time points. The bias of both the the WKM and the AWKM
-estimators appeared largest in Scenario 5.
+follow-up time points. The bias of the WKM estimator appeared largest in
+Scenario 5. The bias of the AWKM estimator was similar across the five
+scenarios
 
 \begin{figure}
 \caption{Cancer-free survival over time since hire in five simulation scenarios. The true (discrete) survival curve is represented by the solid lines. The average inverse probability weighted Kaplan-Meier (WKM) survival curve is represented by the dashed-line with short dashes. The average Aalen-filtered inverse probability weighted Kaplan-Meier (AWKM) survival curve is represented by the dashed-line with long dashes. Estimated survival curves were averaged over 250 replicates. Salmon color indicates survival and survival estimates under rule $a_0$ when workers are always unexposed. Cyan color indicates those under rule $a_1$ when workers are always exposed while employed.}
@@ -854,9 +858,8 @@ Figure \ref{fig:survival}. The WKM estimator over-estimated the
 difference in cancer-free survival time, resulting in bias toward the
 null, whereas the AWKM estimator under-estimates the cancer-free
 survival, resulting in bias away from the null. In every scenario, the
-bias of the WKM-derived contrast was several times larger in magnitude
-than that of the AWKM-derived contrast. The bias of both estimators was
-greatest for Scenario 5.
+bias of the WKM-derived contrast was two to several times larger in
+magnitude than that of the AWKM-derived contrast.
 
 The qualitative results here were consistent with those of Izano (2017).
 However, true and estimated survival in the present analysis was larger
@@ -919,12 +922,13 @@ compatible with our hypothetical causal structure, the AWKM survival
 estimator had small bias compared to the WKM estimator. The bias was
 smaller when the cumulative incidence of the outcome was low and at
 later follow-up time points. Next, we estimated cancer-free survival in
-a real-world context. Using data from the UAW-GM Cohort study, we
-followed \(38\,553\) individuals starting from hire to 40 years after
-hire for incidence of colon cancer. This duration of follow-up spans the
-vast majority of individuals' working lifetimes. As in the simulation,
-the UAW-GM data were longitudinal data with baseline covariates,
-time-varying covariates, and a survival outcome.
+a real-world context. Using data from two plants participating in the
+UAW-GM Cohort study, we followed \(38\,553\) individuals starting from
+hire to 40 years after hire for incidence of digestive system cancers
+(colon, rectal, esophageal, or stomach). This duration of follow-up
+spans the vast majority of individuals' working lifetimes. As in the
+simulation, the UAW-GM data were longitudinal data with baseline
+covariates, time-varying covariates, and a survival outcome.
 
 The exposures of interest were MWF of three types: straight, soluble,
 and synthetic (Byers 2006; F. Mirer 2003; F. E. Mirer 2010). Straight
@@ -946,30 +950,32 @@ and synthetic MWFs contain biocides, corrosion inhibitors, and
 chlorinated compounds, some classified as carcinogenic by the IARC (IARC
 1987).
 
-The outcome of interest was colon cancer incidence. There is little past
-research linking colon cancer to MWF exposures, but there is some
-evidence suggesting that straight MWFs cause colon cancer (Izano et al.
-2019). We obtained cancer incidence data via linkage to the Michigan
-Cancer Registry, which recorded cancer incidence cases starting on
-January 1, 1985. The cohort is comprised of individuals hired between
-1938 and 1985. Cancer-free survival to the start of the registry was a
-left-filtering process possibly in the presence of the HWSE as
-investigated in the simulations. Over the 40 year follow-up period,
-vital status was obtained through the Social Security Administration,
-the National Death Index, as well as records provided by the UAW.
-Baseline confounders included race, sex, plant, and year of hire.
-Time-varying confounders included age, cumulative time off, and exposure
-to the metalworking fluids not under study. These terms were included in
-the estimation of both the treatment and censoring mechanisms, which
-were estimated with stratification on every year of follow-up. The
-exposure rules of interest were identical to those in the simulation
-study: \(a_0\) never exposed and \(a_1\) always exposed while at work.
-We assumed that the effect of exposure on health status, mortality,
-cancer incidence, etc occurs after a lag of 15 years. Similarly, we
-assumed that the effects of cumulative time off occur after a 15 year
-lag. Counterfactual survival under rules \(a_0\) and \(a_1\) were
-estimated using the WKM and AWKM estimators. Summary statistics for the
-full study population and the colon cancer cases are presented in Table
+The outcome of interest was digestive system cancer incidence. There is
+little past research linking digestive system cancers to MWF exposures,
+but there is some evidence suggesting that straight MWFs cause digestive
+system cancers (Izano et al. 2019). Cancer incidence was obtained by
+linkage to Surveillance, Epidemiology, and End Results (SEER), which
+recorded cancer incidence cases starting on January 1, 1973. The cohort
+is comprised of individuals hired between 1938 and 1975. Cancer-free
+survival to the start of the registry was a left-filtering process
+possibly in the presence of the HWSE as investigated in the simulations.
+Over the 40 year follow-up period, vital status was obtained through the
+Social Security Administration, the National Death Index, as well as
+records provided by the UAW. The exposure rules of interest in the
+applied analysis were different than those in the simulation study:
+\(a_0\) being exposed with 75\% chance in the years exposure was
+observed and \(a_1\) being exposed in the years exposure was observed.
+Weights were truncated at 1000. Binary exposure is defined to be
+exposure above the median level of exposure to straight, soluble, and
+synthetic MWFs or not. Counterfactual survival under rules \(a_0\) and
+\(a_1\) were estimated using the WKM and AWKM estimators. Baseline
+confounders included race, sex, plant, and year of hire. Time-varying
+confounders included age, cumulative time off, employment status, and
+exposure to the metalworking fluids exposure from the past year. These
+terms were included in the estimation of both the treatment and
+censoring mechanisms, which were estimated with stratification on every
+two years of follow-up. Summary statistics for the full study population
+and the digestive system cancer cases are presented in Table
 \ref{tab:popchar}.
 
 \begin{table}[h]
@@ -977,29 +983,28 @@ full study population and the colon cancer cases are presented in Table
 \label{tab:popchar}
 \begin{center}\begin{tabular}{lrlrl}
 \toprule
-&       \multicolumn{2}{c}{Full cohort}       & \multicolumn{2}{c}{Colon cancer cases}      \\
+&       \multicolumn{2}{c}{Full cohort}       & \multicolumn{2}{c}{Digestive cancer cases}      \\
 \midrule
 $n$ (person-years) 
-            &     38 553 & (1 402 372)       & 267 & (9 635)        \\
+                       &     26 182 & (695 475) & 213 & (6000) \\ 
 Race (\%) \\
-\hspace{1.5em} Black   &      7 133 & (18.5)                &  83 & (31.1)          \\
-\hspace{1.5em} White   &     31 420 & (81.5)                & 184 & (68.9)          \\
+\hspace{1.5em} Black   &      6 017 & (23.0)  &  66 & (31.0)  \\ 
+\hspace{1.5em} White   &     20 165 & (77.0)  & 147 & (69.0)  \\ 
 Sex (\%) \\
-\hspace{1.5em} Female  &      4 757 & (12.3)                &  49 & (18.4)      \\
-\hspace{1.5em} Male    &     33 796 & (87.7)                & 218 & (81.6)      \\
+\hspace{1.5em} Female  &      3 328 & (12.7)  &  15 & (7.0)  \\ 
+\hspace{1.5em} Male    &     22 854 & (87.3)  & 198 & (93.0)  \\ 
 Plant (\%) \\
-\hspace{1.5em} Plant 1 &      9 092 & (23.6)                &  66 & (24.7)      \\
-\hspace{1.5em} Plant 2 &     17 090 & (44.3)                & 107 & (40.1)      \\
-\hspace{1.5em} Plant 3 &     12 371 & (32.1)                &  94 & (35.2)          \\
+\hspace{1.5em} Plant 1 &      9 092 & (34.7)  & 103 & (48.4)  \\ 
+\hspace{1.5em} Plant 2 &     17 090 & (65.3)  & 110 & (51.6)  \\ 
 \midrule
 Ever exposed to MWF (\%)
-                        &     22193 & (57.6)                & 104 & (39.0)          \\
+                                            &      13 240 & (50.6)  &  95 & (44.6)  \\ 
 Year of hire (mean (\textsc{sd}))
-                        &     1963 & (11.62)            & 1968 & (8.79)         \\
-Age (mean (\textsc{sd}))
-                        &     63.38 & (9.08)                & 67.78 & (9.27)        \\
-Cumulative time off (mean (\textsc{sd}))
-                        &     0.04 & (0.14)               & 0.05 & (0.15)       \\
+                                            &            1963 & (12.26) & 1960 & (9.55) \\ 
+Age at end of follow-up (mean (\textsc{sd}))
+                                            &         55.09 & (12.02) & 63.58 & (9.40) \\ 
+Cumulative years off (mean (\textsc{sd}))
+                                            &          0.06 & (0.15)  & 0.12 & (0.24)   \\
 \bottomrule
 \end{tabular}\end{center}
 \end{table}
@@ -1008,29 +1013,30 @@ Cumulative time off (mean (\textsc{sd}))
 \subsection{Assumptions}\label{assumptions}}
 
 Since we are working with observational data, the evaluation of the
-no-interference, causal consistency, ignorability, and positivity
-assumptions are critical for causal inference. The stability of our
-estimation depends on positivity, which we assessed qualitatively by
-examining the distribution of the weights. The no-interference
-assumption may be problematized by the fact that there were a finite
-number of job types in the factory setting. If one worker operates a
-particular metalworking machine, then the the other workers are not able
-to operate that machine at that time. Instead, they may be assigned to
-assembly tasks, which have lower MWF exposure opportunities. That said,
-since these factories were quite large, there may be approximate
-independence. The consistency assumption is also problematic. The MWFs
-of interest are complex chemical mixtures whose composition changes by
-design and by nature. Over the last several decades, the formulation of
-MWFs has changed significantly in reaction to performance needs and
-toxicity concerns (F. Mirer 2003; Byers 2006). The composition of MWFs
-also undergoes unintentional changes because of the nature of their use:
-MWFs are often applied in contexts where contamination by other
-substances and microbes is possible and chemical changes due to heat and
-pressure are likely. Indeed, there are substantial concerns over the
-carcinogenicity of the chemical species formed in the MWF mixtures that
-were not originally added (Hidajat et al. 2020). Concerns regarding the
-consistency assumption may be abrogated in part by adequate adjustment
-for secular and factory-level characteristics.
+no-interference, causal consistency, ignorability, and overlap
+(positivity) assumptions are critical for causal inference. The
+stability of our estimation depends on positivity, which we assessed
+qualitatively by examining the distribution of the weights. The
+no-interference assumption may be problematized by the fact that there
+were a finite number of job types in the factory setting. If one worker
+operates a particular metalworking machine, then the the other workers
+are not able to operate that machine at that time. Instead, they may be
+assigned to assembly tasks, which have lower MWF exposure opportunities.
+That said, since these factories were quite large, there may be
+approximate independence. The consistency assumption is also
+problematic. The MWFs of interest are complex chemical mixtures whose
+composition changes by design and by nature. Over the last several
+decades, the formulation of MWFs has changed significantly in reaction
+to performance needs and toxicity concerns (F. Mirer 2003; Byers 2006).
+The composition of MWFs also undergoes unintentional changes because of
+the nature of their use: MWFs are often applied in contexts where
+contamination by other substances and microbes is possible and chemical
+changes due to heat and pressure are likely. Indeed, there are
+substantial concerns over the carcinogenicity of the chemical species
+formed in the MWF mixtures that were not originally added (Hidajat et
+al. 2020). Concerns regarding the consistency assumption may be
+abrogated in part by adequate adjustment for secular and factory-level
+characteristics.
 
 Another key assumption meriting discussion is that of conditional
 ignorability. In order to achieve identification, even in the absence of
@@ -1048,7 +1054,7 @@ given history was not as strong. In particular, workers may be assigned
 to certain tasks based on their specific skills and knowledge, which may
 be associated with structural privileges that confer a lower risk of
 deleterious health outcomes. The potential magnitude of this
-uncontrolled confounding is likely to be limited, however. The education
+uncontrolled confounding may have been bounded, however. The education
 level of the workers in the cohort was homogeneous, and all cohort
 members were members of the UAW union, which had uniform procedures in
 place for equitable access to training, wages, and career advancement
@@ -1059,37 +1065,151 @@ exposures) were randomly allocated.
 \hypertarget{results-1}{%
 \subsection{Results}\label{results-1}}
 
-\begin{itemize}
-\tightlist
-\item
-  Foo
-\end{itemize}
+Estimated digestive system cancer-free curves under rules \(a_0\) and
+\(a_1\) applied to the three MWF types are presented in Figure
+\ref{fig:gm_survival}. The survival curves are more or less overlapping
+under the two exposure rules. Numeric values for the cancer-free
+survival and difference in cancer-free survival are presented in Tables
+\ref{tab:gm_survival} and \ref{tab:gm_differences}. The numeric
+summaries are consistent with the qualitative interpretation of the
+estimated survival curves; for all MWF types, expected survival time
+does not differ substantially across rules \(a_0\) and \(a_1\).
+Nonetheless, reducing exposure to straight and soluble MWFs does result
+in a longer survival time, though the difference is less than a month in
+time.
+
+\begin{figure}[h]
+\caption{Cancer-free survival over time since hire under interventions for exposure to straight, soluble, and synthetic metalworking fluids. The estimated inverse probability weighted Kaplan-Meier (WKM) survival curve is represented by the solid. The estimated Aalen-filtered inverse probability weighted Kaplan-Meier (AWKM) survival curve is represented by the dashed-line. Salmon color indicates survival and survival estimates under rule $a_0$; cyan color indicates those under rule $a_1$.}
+\label{fig:gm_survival}
+\begin{center}
+\includegraphics{/Users/kevinchen/Documents/2021 Fall/256 - Causal Inference/256-final/reports/resources/gm_results.pdf}
+\end{center}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Estimated cancer-free survival time over 35-year follow-up.} 
+\label{tab:gm_survival}
+\begin{tabular}{llrrr}
+  \toprule
+Rule & Estimator & Straight & Soluble & Synthetic \\ 
+  \midrule
+$a_0$ & WKM & 29.9606 & 29.9605 & 29.9626 \\ 
+  $a_0$ & AWKM & 29.9337 & 29.9398 & 29.9443 \\ 
+   \midrule
+$a_1$ & WKM & 29.9600 & 29.9584 & 29.9648 \\ 
+  $a_1$ & AWKM & 29.9325 & 29.9360 & 29.9479 \\ 
+   \bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[H]
+\centering
+\caption{Estimated difference in average cancer-free survival time over 35-year follow-up comparing rule $a_1$ exposed above the median level of exposure with probability 1\% to $a_0$ never exposed.} 
+\label{tab:gm_differences}
+\begin{tabular}{lrrr}
+  \toprule
+Estimator & Straight & Soluble & Synthetic \\ 
+  \midrule
+WKM & -0.0006 & -0.0021 & 0.0022 \\ 
+  AWKM & -0.0012 & -0.0039 & 0.0037 \\ 
+   \bottomrule
+\end{tabular}
+\end{table}
+
+Figure \ref{fig:gm_weights} presents the median cumulative weight
+applied years since hire with ribbons showing the minimum and maximum
+weight. The overlap in the distribution of weights under the two rules
+for synthetic MWF exposure suggests that the model for the treatment and
+censoring mechanisms were inadequate in distinguishing the units of
+analysis by their probability of following a certain exposure rule or of
+remaining alive. The distribution of the weights was very skewed.
+Without truncation, they would have been in the order of magnitude of
+\(10^{20}\) or higher. Distributional summaries of the cumulative
+weights without truncation are presented in Table \ref{tab:gm_w}. The
+presence of extremely large weights suggests that our observed data were
+inadequate for answering the causal question of interest due to
+practical violations in overlap (Petersen et al. 2012).
+
+\begin{table}[H]
+\centering
+\caption{Summary statistics for the cumulative weights used for the WKM estimator at $t = 1$ and $t = 35$ years since hire for each metalworking fluid type and exposure rule.} 
+\label{tab:gm_w}
+\begin{tabular}{llrrrrrrr}
+  \toprule
+MWF type & Rule & $t$ & Minimum & Q1 & Median & Mean & Q3 & Maximum \\ 
+  \midrule
+Straight & $a_0$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
+   & $a_1$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
+  Soluble & $a_0$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
+   & $a_1$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
+  Synthetic & $a_0$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
+   & $a_1$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
+  Straight & $a_0$ &  35 & 0.00 & 2.25 & 4.71 & $9.7 \times 10^{16}$ & 4622.00 & $7.3 \times 10^{20}$ \\ 
+   & $a_1$ &  35 & 0.00 & 2.70 & 13.40 & $1.3 \times 10^{18}$ & 22142.45 & $9.8 \times 10^{21}$ \\ 
+  Soluble & $a_0$ &  35 & 0.00 & 4.04 & 858.96 & $5.2 \times 10^{15}$ & 74610.19 & $2.3 \times 10^{19}$ \\ 
+   & $a_1$ &  35 & 0.00 & 158.56 & 6685.12 & $2.3 \times 10^{17}$ & 1227858.13 & $1.7 \times 10^{21}$ \\ 
+  Synthetic & $a_0$ &  35 & 0.00 & 1.02 & 1.25 & $3.7 \times 10^{19}$ & 8.85 & $3.2 \times 10^{23}$ \\ 
+   & $a_1$ &  35 & 0.00 & 1.02 & 1.36 & $2.1 \times 10^{21}$ & 22.63 & $1.8 \times 10^{25}$ \\ 
+   \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}
+\caption{Median of the cumulative weights for each year since hire with ribbons delimiting the range of values calculated. Salmon color corresponds to the weights used in the estimation of the survival curve under rule $a_0$; cyan corresponds to those for rule $a_1$.}
+\label{fig:gm_weights}
+\begin{center}
+\includegraphics{/Users/kevinchen/Documents/2021 Fall/256 - Causal Inference/256-final/reports/resources/gm_weights.pdf}
+\end{center}
+\end{figure}
 
 \hypertarget{discussion}{%
 \section{Discussion}\label{discussion}}
 
-\begin{itemize}
-\tightlist
-\item
-  FU in GM is much longer than 20 years
-\item
-  Exclusion restriction on \(H\) so that its parents do not include
-  \(A\) is not necessary for identification in full data
-\item
-  Exclusion restriction on \(D\) so that its parents do not include
-  \(H\) not needed if \(H\) is observed and conditioned upon
-\item
-  Not clear if these were for convenience or what
-\item
-  What if we increase FU? Lags?
-\item
-  Greater fineness in exposure definition? Different interventions?
-\item
-  No way to verify to what extent the simulation informs the real data
-  generating system
-\item
-  Model specification, double robustness
-\end{itemize}
+In the simulation study, we showed that the inverse probability of
+exposure/censoring weighted Kaplan-Meier estimator resulted in lower
+bias in the estimation of average survival time than did the weighted
+Kaplan-Meier estimator without the Aalen filter. While the Aalen filter
+corrects for non-informative left-filtering in the estimation of the
+discrete hazard by excluding person-years not observed under the cancer
+registry. These person-years contribute to estimation during the
+estimation of exposure and censoring weights. Speculatively, the
+combination of the two extensions to the Kaplan-Meier estimator may
+result in the partial control of informative left censoring without
+adjusting for informative left truncation.
+
+The simulation permitted the evaluation of the estimators in clean,
+well-behaved scenarios, but the same luxury was not possible when using
+observed data. Several assumptions used in the simulation study were
+incompatible with what is known about cancer epidemiology. Firstly,
+cumulative incidence in the simulations was close to 15\% (or higher)
+over a 20-year follow-up. This is an extraordinarily high risk of
+cancer, especially because most workers in the automotive manufacturing
+industry start their careers at a fairly young age. Digestive system
+cancers are among the most common forms of cancer in the Unite states,
+and in 35 years of follow-up, we were still only able to observe a
+cumulative incidence of less than 1\%. The simulation scenarios suggest
+that the bias of the WKM and AWKM estimators is higher when cumulative
+incidence is higher, but when cumulative incidence is low, we rely on
+very few observations to index the risk sets.
+
+There are multiple opportunities for future work. The simulation study
+can be expanded to investigate subtler exposure-outcome effects. In the
+present work, the discrete hazard ratio of cancer incidence given
+exposure was rather high at about 1.28. Furthermore, we assumed the
+luxury of knowing the true treatment and censoring mechanisms' model
+forms, but this is quite unrealistic. In future simulations, the effect
+of model mis-specification should be investigated. Alternatively, we
+could estimate survival using a doubly robust method. There can also be
+several improvements made from the subject-matter expertise
+point-of-view. The exposure rules investigated in the applied analysis
+were chosen naively. Other dynamic or stochastic exposure interventions
+may have been of greater interest to occupational health policy, and
+they may have led to improved numeric performance as well. The present
+analysis did not lag exposure status, which is standard practice in
+cancer epidemiology -- the biological responses to carcinogens do not
+occur until several years or decades after exposure. The true causal
+effects of MWF exposure may not yet be observable after 35 years of
+follow-up.
 
 \newpage
 
@@ -1229,6 +1349,18 @@ Lung Cancer Mortality.''} \emph{Annals of Epidemiology} 23 (6): 334--41.
 \leavevmode\hypertarget{ref-Pearl_1995}{}%
 Pearl, Judea. 1995. {``Causal Diagrams for Empirical Research.''}
 \emph{Biometrika} 82 (4): 669--88.
+
+\leavevmode\hypertarget{ref-Petersen_2012}{}%
+Petersen, Maya L, Kristin E Porter, Susan Gruber, Yue Wang, and Mark J
+van der Laan. 2012. {``Diagnosing and Responding to Violations in the
+Positivity Assumption.''} \emph{Statistical Methods in Medical Research}
+21 (1): 31--54. \url{https://doi.org/10.1177/0962280210386207}.
+
+\leavevmode\hypertarget{ref-Sofrygin_2021}{}%
+Sofrygin, Oleg, Mark J. van der Laan, and Romain Neugebauer. 2021.
+\emph{Stremr: Streamlined Estimation for Static, Dynamic and Stochastic
+Treatment Regimes in Longitudinal Data}.
+\url{https://github.com/osofr/stremr}.
 
 \leavevmode\hypertarget{ref-Xie_2005}{}%
 Xie, Jun, and Chaofeng Liu. 2005. {``Adjusted Kaplan--Meier Estimator

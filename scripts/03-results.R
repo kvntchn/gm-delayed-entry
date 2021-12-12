@@ -76,7 +76,7 @@ sim_results %>% ggplot(aes(
 	color = rule,
 )) + geom_step() + facet_grid(scenario ~ .) +
 	# coord_cartesian(ylim = c(0.8, 1)) +
-	labs(x = "Time since hire", y = "Cancer-free survival") +
+	labs(x = "Years since hire", y = "Cancer-free survival") +
 	mytheme + theme(
 		legend.title = element_blank(),
 		legend.position = "bottom"

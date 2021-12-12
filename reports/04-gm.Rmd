@@ -17,27 +17,28 @@ if (!"mytheme" %in% ls()) {
 }
 library(tidyverse); library(data.table)
 library(here)
-library(tableone)
 ```
 
 # Application to the UAW-GM Cohort
 
-In the simulation study, we showed that under several scenarios compatible with our hypothetical causal structure, the AWKM survival estimator had small bias compared to the WKM estimator. The bias was smaller when the cumulative incidence of the outcome was low and at later follow-up time points. Next, we estimated cancer-free survival in a real-world context. Using data from the UAW-GM Cohort study, we followed $38\,553$ individuals starting from hire to 40 years after hire for incidence of colon cancer. This duration of follow-up spans the vast majority of individuals' working lifetimes. As in the simulation, the UAW-GM data were longitudinal data with baseline covariates, time-varying covariates, and a survival outcome.
+In the simulation study, we showed that under several scenarios compatible with our hypothetical causal structure, the AWKM survival estimator had small bias compared to the WKM estimator. The bias was smaller when the cumulative incidence of the outcome was low and at later follow-up time points. Next, we estimated cancer-free survival in a real-world context. Using data from two plants participating in the UAW-GM Cohort study, we followed $38\,553$ individuals starting from hire to 40 years after hire for incidence of digestive system cancers (colon, rectal, esophageal, or stomach). This duration of follow-up spans the vast majority of individuals' working lifetimes. As in the simulation, the UAW-GM data were longitudinal data with baseline covariates, time-varying covariates, and a survival outcome.
 
 The exposures of interest were MWF of three types: straight, soluble, and synthetic [@Byers_2006; @Mirer_2003; @Mirer_2010]. Straight MWFs are hydrocarbon-based fluids whose use became widespread by the 1920s. They continue to be widely used because of their simple formulation. In straight MWFs, hydrocarbons of different lengths are mixed together with other additives to attain different properties. Straight MWFs contain polycyclic aromatic hydrocarbons, long known to be carcinogenic [@IARC_1973]. Soluble oils are water-based oil emulsions first introduced in response to rising oil prices. They now make up the largest market share of MWFs [@Childers_2006]. Soluble oils are vulnerable to microbial contamination, so the addition of biocides is needed. However, their high lubricity makes soluble MWFs the most popular fluid type. Synthetic MWFs have the best toxicological profile, have no oil, and have a higher resistance to microbial growth. They were introduced into the MWF market in the second half of the 20th C., but fail to out-perform soluble MWFs in metalworking applications. Soluble and synthetic MWFs contain biocides, corrosion inhibitors, and chlorinated compounds, some classified as carcinogenic by the IARC [@IARC_1987].
 
-The outcome of interest was colon cancer incidence. There is little past research linking colon cancer to MWF exposures, but there is some evidence suggesting that straight MWFs cause colon cancer [@Izano_2019]. We obtained cancer incidence data via linkage to the Michigan Cancer Registry, which recorded cancer incidence cases starting on January 1, 1985.
-<!-- and linkage to Surveillance, Epidemiology, and End Results (SEER), which recorded cancer incidence cases starting on January 1, 1973. -->
-The cohort is comprised of individuals hired between 1938 and 1985. Cancer-free survival to the start of the registry was a left-filtering process possibly in the presence of the HWSE as investigated in the simulations. Over the 40 year follow-up period, vital status was obtained through the Social Security Administration, the National Death Index, as well as records provided by the UAW. Baseline confounders included race, sex, plant, and year of hire. Time-varying confounders included age, cumulative time off, and exposure to the metalworking fluids not under study. These terms were included in the estimation of both the treatment and censoring mechanisms, which were estimated with stratification on every year of follow-up. The exposure rules of interest were identical to those in the simulation study: $a_0$ never exposed and $a_1$ always exposed while at work. We assumed that the effect of exposure on health status, mortality, cancer incidence, etc occurs after a lag of 15 years. Similarly, we assumed that the effects of cumulative time off occur after a 15 year lag. Counterfactual survival under rules $a_0$ and $a_1$ were estimated using the WKM and AWKM estimators. Summary statistics for the full study population and the colon cancer cases are presented in Table \ref{tab:popchar}.
+The outcome of interest was digestive system cancer incidence. There is little past research linking digestive system cancers to MWF exposures, but there is some evidence suggesting that straight MWFs cause digestive system cancers [@Izano_2019].
+<!-- We obtained cancer incidence data for those at Plant 3 via linkage to the Michigan Cancer Registry, which recorded cancer incidence cases starting on January 1, 1985. -->
+Cancer incidence was obtained by linkage to Surveillance, Epidemiology, and End Results (SEER), which recorded cancer incidence cases starting on January 1, 1973.
+The cohort is comprised of individuals hired between 1938 and 1975. Cancer-free survival to the start of the registry was a left-filtering process possibly in the presence of the HWSE as investigated in the simulations. Over the 40 year follow-up period, vital status was obtained through the Social Security Administration, the National Death Index, as well as records provided by the UAW. The exposure rules of interest in the applied analysis were different than those in the simulation study: $a_0$ being exposed with 75\% chance in the years exposure was observed and $a_1$ being exposed in the years exposure was observed. Weights were truncated at 1000. Binary exposure is defined to be exposure above the median level of exposure to straight, soluble, and synthetic MWFs or not. Counterfactual survival under rules $a_0$ and $a_1$ were estimated using the WKM and AWKM estimators. Baseline confounders included race, sex, plant, and year of hire. Time-varying confounders included age, cumulative time off, employment status, and exposure to the metalworking fluids exposure from the past year. These terms were included in the estimation of both the treatment and censoring mechanisms, which were estimated with stratification on every two years of follow-up. Summary statistics for the full study population and the digestive system cancer cases are presented in Table \ref{tab:popchar}.
 
 ```{r, eval=F}
+library(tableone)
 mwf <- NULL
-if (!"cohort_analytic" %in% ls()) {source(here("scripts", "04-application.R"))}
-full.tab <- cohort_analytic[,.(
+if (!"gm.dt" %in% ls()) {source(here("scripts", "04-application.R"))}
+full.tab <- gm.dt[,.(
 	studyno,
 	Race,
 	Sex,
-	Plant,
+	Plant = paste("Plant", plant),
 	yin = yin.gm,
 	age = age.year2/365,
 	off = off.gan + off.san + off.han,
@@ -45,54 +46,58 @@ full.tab <- cohort_analytic[,.(
 	soluble = as.integer(straight > 0),
 	synthetic = as.integer(straight > 0),
 	death = `All causes`,
-	canc_co
+	Y = canc
 )]
 
-nrow(full.tab)
-print(
+full.tab_cat <- print(
 	CreateTableOne(data = full.tab[,.(
 		Race = Race[1],
 		Sex = Sex[1],
-		Plant = c("Plant 1", "Plant 2", "Plant 3")[which.max(table(Plant))],
-		Dead = factor(max(death))
-	), studyno]),
+		Plant = Plant[1],
+		# Dead = factor(max(death)),
+		`Ever exposed` = factor(c("Yes", "No")[as.integer(sum(straight + soluble + synthetic) > 0) + 1])
+	), studyno][,-1]),
 	showAllLevels = T)
 
-print(
+full.tab_cont <- print(
 	CreateTableOne(data = full.tab[,.(
-		Straight = factor(as.integer(sum(shift(straight, 15, 0)) <= 0)),
-		Soluble = factor(as.integer(sum(shift(soluble, 15, 0)) <= 0)),
-		Synthetic = factor(as.integer(sum(shift(synthetic, 15, 0)) <= 0)),
 		`Year of hire` = yin[1],
-		Age = age[min(.N, .I[canc_co == 1], na.rm = T)],
-		`Cumulative time off` = shift(
-			off, 15, 0)[min(.N, .I[canc_co == 1], na.rm = T)]
-	), studyno])
+		Age = age[min(.N, .I[Y == 1], na.rm = T)],
+		`Cumulative time off` = off[min(.N, .I[Y == 1], na.rm = T)]
+	), studyno][,-1])
 	)
 
+rownames(full.tab_cat) <- paste(rownames(full.tab_cat), "\n", full.tab_cat[,1])
+full.tab_cat <- as.matrix(full.tab_cat[,2])
+full.tab_cat[1,] <- paste0(full.tab_cat[1,], " (", nrow(full.tab), ")")
+full.tab1 <- rbind(full.tab_cat, as.matrix(full.tab_cont[-1,]))
 
-nrow(full.tab[studyno %in% full.tab[canc_co == 1, studyno]])
-print(
-	CreateTableOne(data = full.tab[studyno %in% full.tab[canc_co == 1, studyno],.(
+case.tab_cat <- print(
+	CreateTableOne(data = full.tab[studyno %in% full.tab[Y == 1, studyno],.(
 		Race = Race[1],
 		Sex = Sex[1],
-		Plant = c("Plant 1", "Plant 2", "Plant 3")[which.max(table(Plant))]
-	), studyno]),
+		Plant = Plant[1],
+		`Ever exposed` = factor(c("Yes", "No")[as.integer(sum(straight + soluble + synthetic) > 0) + 1])
+	), studyno][,-1]),
 	showAllLevels = T)
 
-print(
-	CreateTableOne(data = full.tab[studyno %in% full.tab[canc_co == 1, studyno],.(
-		Straight = factor(as.integer(sum(shift(straight, 15, 0)) <= 0)),
-		Soluble = factor(as.integer(sum(shift(soluble, 15, 0)) <= 0)),
-		Synthetic = factor(as.integer(sum(shift(synthetic, 15, 0)) <= 0)),
+case.tab_cont <- print(
+	CreateTableOne(data = full.tab[studyno %in% full.tab[Y == 1, studyno],.(
 		`Year of hire` = yin[1],
-		Age = age[min(.N, .I[canc_co == 1], na.rm = T)],
-		`Cumulative time off` = shift(
-			off, 15, 0)[min(.N, .I[canc_co == 1], na.rm = T)]
-	), studyno])
+		Age = age[min(.N, .I[Y == 1], na.rm = T)],
+		`Cumulative time off` = off[min(.N, .I[Y == 1], na.rm = T)]
+	), studyno][,-1])
 	)
 
-xtable(head(cars))
+rownames(case.tab_cat) <- paste(rownames(case.tab_cat), "\n", case.tab_cat[,1])
+case.tab_cat <- as.matrix(case.tab_cat[,2])
+case.tab_cat[1,] <- paste0(case.tab_cat[1,], " (", nrow(full.tab[studyno %in% full.tab[Y == 1, studyno]]), ")")
+case.tab1 <- rbind(case.tab_cat, as.matrix(case.tab_cont[-1,]))
+
+tab1 <- cbind(full.tab1, case.tab1)
+tab1 <- gsub(" \\(", " \\& \\(", tab1)
+
+print(xtable(tab1), include.rownames = T)
 ```
 
 
@@ -101,39 +106,119 @@ xtable(head(cars))
 \label{tab:popchar}
 \begin{center}\begin{tabular}{lrlrl}
 \toprule
-&		\multicolumn{2}{c}{Full cohort} 	  & \multicolumn{2}{c}{Colon cancer cases}		\\
+&		\multicolumn{2}{c}{Full cohort} 	  & \multicolumn{2}{c}{Digestive cancer cases}		\\
 \midrule
 $n$ (person-years) 
-            &     38 553 & (1 402 372)       & 267 & (9 635)		\\
+                       &     26 182 & (695 475) & 213 & (6000) \\ 
 Race (\%) \\
-\hspace{1.5em} Black   &      7 133 & (18.5)    			&  83 & (31.1)  		\\
-\hspace{1.5em} White   &     31 420 & (81.5)    			& 184 & (68.9)  		\\
+\hspace{1.5em} Black   &      6 017 & (23.0)  &  66 & (31.0)  \\ 
+\hspace{1.5em} White   &     20 165 & (77.0)  & 147 & (69.0)  \\ 
 Sex (\%) \\
-\hspace{1.5em} Female  &      4 757 & (12.3)    			&  49 & (18.4)		\\
-\hspace{1.5em} Male    &     33 796 & (87.7)    			& 218 & (81.6)		\\
+\hspace{1.5em} Female  &      3 328 & (12.7)  &  15 & (7.0)  \\ 
+\hspace{1.5em} Male    &     22 854 & (87.3)  & 198 & (93.0)  \\ 
 Plant (\%) \\
-\hspace{1.5em} Plant 1 &      9 092 & (23.6)    			&  66 & (24.7)		\\
-\hspace{1.5em} Plant 2 &     17 090 & (44.3)    			& 107 & (40.1) 		\\
-\hspace{1.5em} Plant 3 &     12 371 & (32.1)    			&  94 & (35.2)    		\\
+\hspace{1.5em} Plant 1 &      9 092 & (34.7)  & 103 & (48.4)  \\ 
+\hspace{1.5em} Plant 2 &     17 090 & (65.3)  & 110 & (51.6)  \\ 
 \midrule
 Ever exposed to MWF (\%)
-						&     22193 & (57.6)    			& 104 & (39.0)  		\\
+											&      13 240 & (50.6)  &  95 & (44.6)  \\ 
 Year of hire (mean (\textsc{sd}))
-						&     1963 & (11.62)    		& 1968 & (8.79) 		\\
-Age (mean (\textsc{sd}))
-						&     63.38 & (9.08)    			& 67.78 & (9.27) 		\\
-Cumulative time off (mean (\textsc{sd}))
-						&     0.04 & (0.14)    			  & 0.05 & (0.15) 		\\
+											&        	 1963 & (12.26) & 1960 & (9.55) \\ 
+Age at end of follow-up (mean (\textsc{sd}))
+											&         55.09 & (12.02) & 63.58 & (9.40) \\ 
+Cumulative years off (mean (\textsc{sd}))
+											&          0.06 & (0.15)  & 0.12 & (0.24) 	\\
 \bottomrule
 \end{tabular}\end{center}
 \end{table}
 
 ## Assumptions
 
-Since we are working with observational data, the evaluation of the no-interference, causal consistency, ignorability, and positivity assumptions are critical for causal inference. The stability of our estimation depends on positivity, which we assessed qualitatively by examining the distribution of the weights. The no-interference assumption may be problematized by the fact that there were a finite number of job types in the factory setting. If one worker operates a particular metalworking machine, then the the other workers are not able to operate that machine at that time. Instead, they may be assigned to assembly tasks, which have lower MWF exposure opportunities. That said, since these factories were quite large, there may be approximate independence. The consistency assumption is also problematic. The MWFs of interest are complex chemical mixtures whose composition changes by design and by nature. Over the last several decades, the formulation of MWFs has changed significantly in reaction to performance needs and toxicity concerns [@Mirer_2003; @Byers_2006]. The composition of MWFs also undergoes unintentional changes because of the nature of their use: MWFs are often applied in contexts where contamination by other substances and microbes is possible and chemical changes due to heat and pressure are likely. Indeed, there are substantial concerns over the carcinogenicity of the chemical species formed in the MWF mixtures that were not originally added [@Hidajat_2020]. Concerns regarding the consistency assumption may be abrogated in part by adequate adjustment for secular and factory-level characteristics.
+Since we are working with observational data, the evaluation of the no-interference, causal consistency, ignorability, and overlap (positivity) assumptions are critical for causal inference. The stability of our estimation depends on positivity, which we assessed qualitatively by examining the distribution of the weights. The no-interference assumption may be problematized by the fact that there were a finite number of job types in the factory setting. If one worker operates a particular metalworking machine, then the the other workers are not able to operate that machine at that time. Instead, they may be assigned to assembly tasks, which have lower MWF exposure opportunities. That said, since these factories were quite large, there may be approximate independence. The consistency assumption is also problematic. The MWFs of interest are complex chemical mixtures whose composition changes by design and by nature. Over the last several decades, the formulation of MWFs has changed significantly in reaction to performance needs and toxicity concerns [@Mirer_2003; @Byers_2006]. The composition of MWFs also undergoes unintentional changes because of the nature of their use: MWFs are often applied in contexts where contamination by other substances and microbes is possible and chemical changes due to heat and pressure are likely. Indeed, there are substantial concerns over the carcinogenicity of the chemical species formed in the MWF mixtures that were not originally added [@Hidajat_2020]. Concerns regarding the consistency assumption may be abrogated in part by adequate adjustment for secular and factory-level characteristics.
 
-Another key assumption meriting discussion is that of conditional ignorability. In order to achieve identification, even in the absence of left filtering, we need to have conditionally ignorable future exposure status and ignorable future censoring status at each time point given past data. In occupational cohorts, employment status and health history are strong predictors of future death [@Hafner_1987;@Halliday_2014;@Laliotis_2018]. Logically, major causes of death first act through employment status before they precipitate death. This dynamic is actually a key component in the setup for HWSE. We are therefore relatively confident that conditional ignorability of censoring due to death is attained given covariate, exposure, and cancer history. Our confidence in the conditional ignorability of exposure given history was not as strong. In particular, workers may be assigned to certain tasks based on their specific skills and knowledge, which may be associated with structural privileges that confer a lower risk of deleterious health outcomes. The potential magnitude of this uncontrolled confounding is likely to be limited, however. The education level of the workers in the cohort was homogeneous, and all cohort members were members of the UAW union, which had uniform procedures in place for equitable access to training, wages, and career advancement [@Harbison_1950;@Barnard_2005]. The presence of UAW policies support the assertion that given time since hire, job types (and therefore exposures) were randomly allocated.
+Another key assumption meriting discussion is that of conditional ignorability. In order to achieve identification, even in the absence of left filtering, we need to have conditionally ignorable future exposure status and ignorable future censoring status at each time point given past data. In occupational cohorts, employment status and health history are strong predictors of future death [@Hafner_1987;@Halliday_2014;@Laliotis_2018]. Logically, major causes of death first act through employment status before they precipitate death. This dynamic is actually a key component in the setup for HWSE. We are therefore relatively confident that conditional ignorability of censoring due to death is attained given covariate, exposure, and cancer history. Our confidence in the conditional ignorability of exposure given history was not as strong. In particular, workers may be assigned to certain tasks based on their specific skills and knowledge, which may be associated with structural privileges that confer a lower risk of deleterious health outcomes. The potential magnitude of this uncontrolled confounding may have been bounded, however. The education level of the workers in the cohort was homogeneous, and all cohort members were members of the UAW union, which had uniform procedures in place for equitable access to training, wages, and career advancement [@Harbison_1950;@Barnard_2005]. The presence of UAW policies support the assertion that given time since hire, job types (and therefore exposures) were randomly allocated.
 
 ## Results
 
-- Foo
+```{r, include = F}
+source(here("scripts", "05-application-results.R"))
+
+gm_survival.tab <- dcast(
+	melt(gm.surv[t <= 30],
+			 measure.vars = c("WKM", "AWKM"),
+			 variable.name = "Estimator",
+			 value.name = "Survival")[,.(
+		Survival = sum(Survival)
+	), .(MWF = mwf, Rule = rule, Estimator)],
+	... ~ MWF,
+	value.var = "Survival"
+)
+
+setorder(gm_survival.tab, Rule, Estimator)
+
+gm_differences.tab <- gm_survival.tab[,.(
+		Straight  = Straight[2] - Straight[1],
+		Soluble   = Soluble[2] - Soluble[1],
+		Synthetic = Synthetic[2] - Synthetic[1]
+	), .(Estimator)]
+
+```
+
+Estimated digestive system cancer-free curves under rules $a_0$ and $a_1$ applied to the three MWF types are presented in Figure \ref{fig:gm_survival}. The survival curves are more or less overlapping under the two exposure rules. Numeric values for the cancer-free survival and difference in cancer-free survival are presented in Tables \ref{tab:gm_survival} and \ref{tab:gm_differences}. The numeric summaries are consistent with the qualitative interpretation of the estimated survival curves; for all MWF types, expected survival time does not differ substantially across rules $a_0$ and $a_1$. Nonetheless, reducing exposure to straight and soluble MWFs does result in a longer survival time, though the difference is less than a month in time.
+
+\begin{figure}[h]
+\caption{Cancer-free survival over time since hire under interventions for exposure to straight, soluble, and synthetic metalworking fluids. The estimated inverse probability weighted Kaplan-Meier (WKM) survival curve is represented by the solid. The estimated Aalen-filtered inverse probability weighted Kaplan-Meier (AWKM) survival curve is represented by the dashed-line. Salmon color indicates survival and survival estimates under rule $a_0$; cyan color indicates those under rule $a_1$.}
+\label{fig:gm_survival}
+\begin{center}
+\includegraphics{`r here::here("reports/resources", "gm_results.pdf")`}
+\end{center}
+\end{figure}
+
+```{r}
+print(xtable(gm_survival.tab,
+			 caption = "Estimated cancer-free survival time over 35-year follow-up.",
+			 label = "tab:gm_survival", digits = 4),
+			hline.after = c(-1,0,2, nrow(gm_survival.tab)),
+			floating = T)
+
+
+print(xtable(gm_differences.tab,
+			 caption = "Estimated difference in average cancer-free survival time over 35-year follow-up comparing rule $a_1$ exposed above the median level of exposure with probability 1\\% to $a_0$ never exposed.",
+			 label = "tab:gm_differences", digits = 4),
+			floating = T)
+
+```
+
+Figure \ref{fig:gm_weights} presents the median cumulative weight applied years since hire with ribbons showing the minimum and maximum weight. The overlap in the distribution of weights under the two rules for synthetic MWF exposure suggests that the model for the treatment and censoring mechanisms were inadequate in distinguishing the units of analysis by their probability of following a certain exposure rule or of remaining alive. The distribution of the weights was very skewed. Without truncation, they would have been in the order of magnitude of $10^{20}$ or higher. Distributional summaries of the cumulative weights without truncation are presented in Table \ref{tab:gm_w}. The presence of extremely large weights suggests that our observed data were inadequate for answering the causal question of interest due to practical violations in overlap [@Petersen_2012].
+
+```{r}
+gm_w.small_tab <- rbindlist(list(
+	gm_w.tab[t == 1,],
+	gm_w.tab[t == 35,]))
+
+gm_w.small_tab <- gm_w.small_tab[estimator == "WKM", -1]
+setorder(gm_w.small_tab, t, mwf, rule)
+
+gm_w.small_tab$mwf <- rep(as.vector(sapply(
+	c("Straight", "Soluble", "Synthetic"), function(x) {
+	c(x, "")})), 2)
+
+names(gm_w.small_tab)[1:3] <- c("MWF type", "Rule", "$t$")
+
+print(xtable(
+	gm_w.small_tab,
+	caption = "Summary statistics for the cumulative weights used for the WKM estimator at $t = 1$ and $t = 35$ years since hire for each metalworking fluid type and exposure rule.",
+	label = "tab:gm_w",
+	display = c("s", "s", "s", "d", "f", "f", "f", "g", "f", "g")),
+	math.style.exponents = TRUE,
+	floating = T)
+
+```
+
+\begin{figure}
+\caption{Median of the cumulative weights for each year since hire with ribbons delimiting the range of values calculated. Salmon color corresponds to the weights used in the estimation of the survival curve under rule $a_0$; cyan corresponds to those for rule $a_1$.}
+\label{fig:gm_weights}
+\begin{center}
+\includegraphics{`r here::here("reports/resources", "gm_weights.pdf")`}
+\end{center}
+\end{figure}
