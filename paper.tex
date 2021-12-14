@@ -282,44 +282,46 @@ study the health effects of metalworking fluids (Eisen et al. 1992,
 industrial metalworking operations to lubricate and cool machinery and
 parts. The three major classes of MWF are straight, soluble, and
 synthetic metalworking fluids (Byers 2006). Possible routes of human
-exposure include absorption through skin, inhalation or aerosols, and
+exposure include absorption through skin, inhalation of aerosols, and
 ingestion of droplets.
 
-A central concern in the analysis of occupational cohorts is the
-potential for the healthy worker survivor effect (HWSE), the phenomenon
-by which healthy individuals remain at work, while less healthy
-individuals leave work -- possibly in response to exposure-related
-health decline. In the presence of the HWSE, those with the highest
-cumulative occupational exposures are also those who are less at risk of
-disease. Thus, standard measures of association would show an inverse
-relationship between occupational exposure and poor health outcomes
-(Arrighi and Hertz-Picciotto 1994). The HWSE is an example of
-time-varying confounding affected by past exposure. Previous studies
-have attempted to assess the presence of the HWSE in observed data by
-assessing so-called path-specific associations using Cox proportional
-hazards modeling (Naimi et al. 2013; Garcia et al. 2017). However, these
-measures of associations were themselves subject to the confounding
+A central concern in the analysis of longitudinal occupational cohort
+data is the potential for bias due to the healthy worker survivor effect
+(HWSE), the phenomenon by which healthy individuals remain at work,
+while less healthy individuals leave work -- possibly in response to
+exposure-related health decline. In the presence of the HWSE, those with
+the highest cumulative occupational exposures are also those who are
+less at risk of disease (more likely to have potential outcome no
+disease under both exposure and no exposure scenarios). Thus, standard
+measures of association would show an inverse relationship between
+occupational exposure and poor health outcomes (Arrighi and
+Hertz-Picciotto 1994). The HWSE is an example of time-varying
+confounding affected by past exposure. Previous studies have attempted
+to assess the presence of the HWSE in observed data by assessing
+so-called path-specific associations using Cox proportional hazards
+modeling (Naimi et al. 2013; Garcia et al. 2017). However, in those
+studies, the estimates were themselves subject to the confounding
 structures they sought to characterize.
 
 If conditional sequential ignorability of exposure and censoring status
-at each point in follow-up and positivity can be attained given
-covariate history, then causal methods can be applied to account for the
-HWSE. Past studies have applied causal methods capable of accounting for
-time-varying confounding affected by past exposure to the study of MWF
-exposures and cancer mortality outcomes in the UAW-GM Cohort Study
-(Garcia et al. 2018; Izano et al. 2019), but the study of cancer
-incidence outcomes is further problematized by the incomplete
-observation of cancer incidence outcomes at every point of follow-up
-over the study period. Nonetheless, we wish to make inferences about the
-carcinogenicity of MWF exposure over an individual's lifetime starting
-upon entry into the workforce. The UAW-GM Cohort included those hired
-roughly between 1938 and 1985. However, cancer incidence reporting at
-the Michigan Cancer Registry did not begin until 1985. Hence, our
-observed cohort data is subject to \emph{left filtering}: cancer
-incidence is the outcome of interest, but before 1985, both cancer
-incidence status and time of cancer incidence are unknown. Observation
-of the complete cancer incidence outcome vector over the study period
-was conditional on an individual surviving to 1985 cancer-free.
+at each point in follow-up and positivity (overlap) can be attained
+given covariate history, then longitudinal causal methods can be applied
+to account for the HWSE. Past studies have applied causal methods
+capable of accounting for time-varying confounding affected by past
+exposure to the study of MWF exposures and cancer mortality outcomes in
+the UAW-GM Cohort Study (Garcia et al. 2018; Izano et al. 2019).
+However, the study of cancer incidence outcomes is further problematized
+by the incomplete observation of cancer incidence outcomes at every
+point of follow-up over the study period. Nonetheless, we wish to make
+inferences about the carcinogenicity of MWF exposure over an
+individual's lifetime starting upon entry into the workforce. The UAW-GM
+Cohort included those hired roughly between 1938 and 1985. However,
+cancer incidence reporting did not begin until 1973. Hence, our observed
+cohort data exhibits \emph{left filtering}: cancer incidence is the
+outcome of interest, but before 1985, both cancer incidence status and
+time of cancer incidence are unknown. Observation of the complete cancer
+incidence outcome vector over the study period was conditional on an
+individual surviving to 1985 cancer-free.
 
 In the presence of the HWSE, left filtering implies outcome
 misclassification that is informative of true cancer status. As part of
@@ -337,14 +339,14 @@ censoring due to death. For each intervention, three survival curves
 were produced: (1) the true survival curve, (2) the WKM survival curve,
 and (3) AWKM survival curve. Estimator bias was evaluated by comparing
 the average of 250 estimates of to the average difference in cancer-free
-survival under the two rules to the true average survival difference
+survival under the two rules to the true average difference in survival
 when exposure and censoring were controlled deterministically.
 
 The present project replicates the simulation and bias analyses
 presented in Chapter 3 of Izano (2017), embeds the problem in the
 non-parametric structural causal approach of Pearl (1995), and applies
 the WKM and AWKM estimators to the estimation of digestive-system
-cancer-free survival under exposure/censoring rules in the UAW-GM
+cancer-free survival under exposure and no censoring rules in the UAW-GM
 Cohort. The \texttt{stremr} package was used to estimate the WKM and
 AWKM survival curves in both the simulation and the applied analyses
 (Sofrygin, van der Laan, and Neugebauer 2021).
@@ -363,8 +365,8 @@ interest are presented in Table \ref{tab:variables}. The causal model
 represents hypothetical relationships between variables over time
 compatible with the theory underlying the HWSE in longitudinal
 occupational cohort studies. At each time point, the effect of
-cumulative exposure \(\bar A(t)\) on cancer incidence \(Y^(t)\) is
-confounded by a path through employment status \(N(t)\) and underlying
+cumulative exposure \(\bar A(t)\) on cancer incidence \(Y^*(t)\) is
+confounded by the path through employment status \(N(t)\) and underlying
 health \(H(t)\) as well as the path through past exposure
 \(\bar A(t - 1)\) and vital status \(D(t)\). These paths follow
 straightforward logic: occupational exposure depends upon employment
@@ -394,14 +396,13 @@ throughout.
 
 Assume we have \(n = 50\,000\) iid units in \(X\) with
 \[X_i(t) = \left(R_i = 0, W_i, S_i, \bar H_i(t), \bar N_i(t), \bar A_i(t), \bar a_i(t), \bar Y^*_i(t) = \bar Y_i(t) \right).\]
-The bar notation to indicates variable history where
-\(\bar X_i(t) = \left(X_i(k)\right)_{k = 1}^t\). In the case of
-exposure, \(\bar A_i(t)\) is the indicator of whether unit \(i\) was
-ever exposed through time \(t\). Note that true cancer status \(Y^*(t)\)
-not observed until \(t \ge R\), after the start of the registry. Call
-\(X\) the full data, where we have \(R = 0\) for all. In the observed
-data \(X^\text{obs}\), we cannot assume \(R = 0\) for all;
-susceptibility \(S\) and underlying health status \(H\) are not known:
+In general, we use bar notation to indicate variable history as follows
+\(\bar X_i(t) = \left(X_i(k)\right)_{k = 1}^t\). Note that true cancer
+status \(Y^*(t)\) is not observed until \(t \ge R\), after the start of
+the registry. Call \(X\) the full data, where we have \(R = 0\) for all.
+In the observed data \(X^\text{obs}\), we cannot assume \(R = 0\) for
+all. Additionally, susceptibility \(S\) and underlying health status
+\(H\) are not known:
 \[X^\text{obs}_i(t) = \left(R_i, W_i, \bar N_i(t), \bar A_i(t), \bar a_i(t), \bar Y_i(t) \right).\]
 Under the causal model, we assume the following non-parametric
 structural equations: \[\begin{aligned}
@@ -416,13 +417,13 @@ Y^*(t)& = f_{Y^*(t)} \left(W, S, H(t), \bar A (t), D(t), Y^*(t - 1), U_{Y^*(t)} 
 Y(t) & = Y^*(t) \times \Ind{Y^*(\lfloor R \rfloor) = 0} \times \Ind{D(t) = 0} \ .
 \end{aligned}\] The exogenous variables (errors)
 \(U = \left( U_R, U_W, U_S, U_{H(t)}, U_{N(t)}, U_{A(t)}, U_{D(t)}, U_{Y^*(t)} \right)_{t = 1}^{T}\)
-are mutually independent. Exposure status is a time-varying indicator;
-let exposure history \(\bar A(t)\) be summarized as being ever-exposed
-or not with \(\bar A(t) = \Ind{\sum_{k = 1}^t\Ind{A(k) = 1} > 0}\). The
-outcome of interest is a survival outcome, so
+are mutually independent. Exposure status is a time-varying indicator,
+and exposure history is summarized as
+\(\bar A(t) = \Ind{\sum_{k = 1}^t\Ind{A(k) = 1} > 0}\). The outcome of
+interest is a survival outcome, so
 \(Y^*(t - 1) = 1 \Rightarrow Y^*(t) = 1\). The observed outcome \(Y(t)\)
-at time \(t\) is a function of true outcome status and the time points
-delimiting left and right censoring. An abbreviated directed acyclic
+at time \(t\) is a function of true outcome status, time of left
+censoring, and time of right censoring. An abbreviated directed acyclic
 graph (DAG) representing the causal relationships encoded in the
 equations above is presented in Figure \ref{fig:dag}.
 
@@ -447,7 +448,7 @@ equations above is presented in Figure \ref{fig:dag}.
 %
 \path[->] (H0) edge (N0);
 \path[->] (N0) edge (A0);
-\path[->] (A0) edge [bend right=20] (Y0);
+\path[->] (A0) edge [bend right=30] (Y0);
 \path[->] (H0) edge (H);
 \path[->] (W) edge [bend right=10] (N);
 \path[->] (N0) edge (N);
@@ -477,14 +478,14 @@ on cancer incidence \(Y^*(t)\) is confounded by employment status
 \(N(t)\) through the backdoor path
 \(\bar A(t) \leftarrow N(t) \leftarrow H(t) \rightarrow Y^*(t)\). In the
 absence of observed data on health status \(H(t)\), an analyst may be
-tempted to condition on employment status \(N(t)\), but doing so would
-introduce collider bias while blocking the causal path between past
-exposure \(\bar A(t - 1)\) and cancer \(Y^*(t)\). Furthermore, an
-analysis starting at an arbitrary time point after the time origin
-(hire) would be tantamount to conditioning on those still alive at that
-time, which would also result in both collider bias and the conditioning
-on nodes on the causal path between the exposure and outcome of
-interest.
+tempted to conduct an analysis by simply ``blocking'' or conditioning on
+employment status \(N(t)\), but doing so would introduce collider bias
+while blocking the causal path between past exposure \(\bar A(t - 1)\)
+and cancer \(Y^*(t)\). Furthermore, an analysis starting at an arbitrary
+time point after the time origin (hire) would be tantamount to
+conditioning on those still alive at that time, which would result in
+both collider bias and the conditioning on nodes on the causal path
+between the exposure and the outcome of interest.
 
 \hypertarget{simulation}{%
 \subsection{Simulation}\label{simulation}}
@@ -557,19 +558,20 @@ units over \(T = 20\) years, we have:
   \(Y(t) = Y^*(t) \times \Ind{Y^*(\lfloor R \rfloor) = 0} \times \Ind{D(t) = 0}\).
 \end{itemize}
 
-Five sets of data were generated using these equations to represent five
-scenarios. Scenario 1 represents the base case where 10\% of workers are
-susceptible to exposure-related effects, the odds ratio of mortality
-each additional year following cancer diagnosis is about 1.6, and there
-is moderate time-varying confounding by health status. In scenario 2, we
-have greater cancer-related mortality by increasing
-\(\beta_{\bar Y}^D\). In scenario 3, we increase \(p_S\), the proportion
-of the study population susceptible to the carcinogenic effects of MWF
-exposure. In scenario 4, we consider greater time-varying confounding by
-health status by increasing \(\beta_H^N\) and \(\beta_H^Y\). In the last
-scenario, we have greater background cancer incidence by increasing
-\(\beta_0^Y\). The sets of parameters used in the five scenarios are
-presented in Table \ref{tab:params}.
+Five sets of data were generated using these equations, but with
+different parameters, to represent five scenarios. Scenario 1 represents
+the base case where 10\% of workers are susceptible to exposure-related
+effects, the odds ratio of mortality each additional year following
+cancer diagnosis is about 1.6, and there is moderate time-varying
+confounding by health status. In scenario 2, we have greater
+cancer-related mortality by increasing \(\beta_{\bar Y}^D\). In scenario
+3, we increase \(p_S\), the proportion of the study population
+susceptible to the carcinogenic effects of MWF exposure. In scenario 4,
+we consider greater time-varying confounding by health status by
+increasing \(\beta_H^N\) and \(\beta_H^Y\). In the last scenario, we
+have greater background cancer incidence by increasing \(\beta_0^Y\).
+The sets of parameters used in the five scenarios are presented in Table
+\ref{tab:params}.
 
 \begin{table}[h]
 \caption{Simulation parameters.}
@@ -616,11 +618,11 @@ rule \(a_0\), set \(D(t) = 0\), and set \(A(t) = 0\) while \(N(t) = 1\).
 Under rule \(a_1\), set \(D(t) = 0\), and set \(A(t) = 1\) while
 \(N(t) = 1\). Under both rules, we prevented censoring by death as if it
 were intervenable. The causal effect was defined by contrasting the
-survival function \(S_{a_1}(t) = 1 - \E{Y_{a_1}(t)}\) under rule \(a_1\)
-to \(S_{a_0}(t) = 1 - \E{Y_{a_0}(t)}\) that under rule \(a_0\). Note
-that this causal estimand was defined over \emph{a priori
+survival functions \(S_{a_1}(t) = 1 - \E{Y_{a_1}(t)}\) under rule
+\(a_1\) to \(S_{a_0}(t) = 1 - \E{Y_{a_0}(t)}\) that under rule \(a_0\).
+Note that this causal estimand was defined over \emph{a priori
 counterfactuals} not observable in the real world (Frangakis and Rubin
-2002). This approach is standard in epidemiologic studies, however.
+2002). This approach is standard in epidemiologic studies.
 
 The survival function expresses the probability that a person following
 rule \(a\) is cancer-free at the end of time point \(t\). The expected
@@ -632,13 +634,13 @@ event under two different interventions over 20 years of follow-up under
 five different data generating scenarios. Bias was evaluated by
 comparing estimates of \(\psi\) to its true value in 250 simulations per
 scenario (the original analysis performed 500). The true value was
-calculated by simulating the full data for five hundred thousand
-individuals (the original analysis used one million) with rules \(a_0\)
-and \(a_1\) applied deterministically. Estimates of \(\psi\) were
-obtained by first estimating the survival curves \(S_a(t)\) using two
-estimators: the inverse probability weighted Kaplan-Meier estimator
-(WKM) and the Aalen-filtered WKM (AWKM). These survival estimators are
-detailed in the following section.
+calculated by simulating the full data for \(500\,000\) individuals (the
+original analysis used one million) with rules \(a_0\) and \(a_1\)
+applied deterministically. Estimates of \(\psi\) were obtained by
+estimating the survival curves \(S_a(t)\) using two estimators: the
+inverse probability weighted Kaplan-Meier estimator (WKM) and the
+Aalen-filtered WKM (AWKM). These survival estimators are detailed in the
+following section.
 
 \hypertarget{kaplan-meier-estimator-and-extensions}{%
 \subsection{Kaplan-Meier estimator and
@@ -650,17 +652,17 @@ we review the estimator of Xie and Liu (2005), an extension of the KM
 estimator where units are weighted by the inverse probability of
 treatment. The standard KM estimator requires counting up the number of
 cases \(c^0_{a}(t)\) that occurred in interval \((t - 1, t]\) and the
-number of units at risk \(R^0_{a}(t)\) in that interval at all event
+number of units at risk \(r^0_{a}(t)\) in that interval at all event
 times \(t\). Assuming cancer status was assessed at the end of regular
 intervals \(t = 1, \ldots, K\), we have: \[\begin{aligned}
 c^0_{a} (t)
 & = \sum_i^n \Ind{Y_i(t) = 1} \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)} \\
-R^0_{a} (t)
+r^0_{a} (t)
 & = \sum_i^n \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)}.
 \end{aligned}\] The standard survival estimator is \[\hat S^0_{a}(t) =
 \begin{cases}
 1 & \text{if } t < t_1 \\
-\prod_{j \le t} \left(1 - \frac{c^0_{a}(j)}{R^0_{a}(j)}\right) & \text{if } t \ge t_1 \\
+\prod_{j \le t} \left(1 - \frac{c^0_{a}(j)}{r^0_{a}(j)}\right) & \text{if } t \ge t_1 \\
 \end{cases}\] where \(t_1\) is the first event time.
 
 In observational studies, survival contrasts estimated using the
@@ -673,7 +675,7 @@ estimator augments the standard KM estimator by weighting units at time
 \[\begin{aligned}
 c^w_{a} (t)
 & = \sum_i^n w_{i, a}(t) \times \Ind{Y_i(t) = 1} \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)}\\
-R^w_{a} (t)
+r^w_{a} (t)
 & = \sum_i^n w_{i, a}(t) \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)}
 \end{aligned}\] The WKM survival estimator for rule \(a\) is
 \[\hat S^w_{a}(t) =
@@ -687,18 +689,18 @@ Aalen filter, which considers only the units at time \(t\) for which the
 outcome is observed: \[\begin{aligned}
 c_{a} (t)
 & = \sum_i^n w_{i, a}(t) \times \Ind{Y_i(t) = 1} \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)} \times \Ind{t \ge R_i} \\
-R_{a} (t)
+r_{a} (t)
 & = \sum_i^n w_{i, a}(t) \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)} \times \Ind{t \ge R_i}
 \end{aligned}\] The Aalen-filtered WKM (AWKM) estimator for rule \(a\)
 is \[\hat S_{a}(t) =
 \begin{cases}
 1 & \text{if } t < t_1 \\
-\prod_{j \le t} \left(1 - \frac{c_{a}(j)}{R_{a}(j)}\right) & \text{if } t \ge t_1 \\
+\prod_{j \le t} \left(1 - \frac{c_{a}(j)}{r_{a}(j)}\right) & \text{if } t \ge t_1 \\
 \end{cases}\] where \(t_1\) is the first event time.
 
 In the full data, the WKM and AWKM estimators are equivalent, and
-identification is achieved under overlap (positivity) and sequential
-ignorability (randomization) assumptions: \[\begin{aligned}
+identification is achieved under positivity and sequential ignorability
+assumptions: \[\begin{aligned}
 Y^*_{a, \bar d = 0} (t')   & \indep A(t) \mid W,\ \bar A(t - 1) = \bar a(t - 1),\ D(t - 1) = 0,\ N(t) = 1\\
 Y^*_{a, \bar d = 0} (t') & \indep D(t) \mid W,\ D(t - 1) = 0,\ Y^*(t - 1) = 0,\ \bar A(t - 1) = \bar a(t - 1)
 \end{aligned}\] for all times \(t'\ge t\), and
@@ -714,8 +716,8 @@ Pearl's backdoor criterion for the estimation of the causal effects of
 \(\bar A(t)\) on \(Y^*(t)\) and \(D(t)\) on \(Y^*(t)\), respectively.
 Thus, the causal effect of the joint intervention on
 \(\big(\bar A(t), D(t)\big)\) at each time \(t\) is identified. Causal
-identification is not attained when true cancer status \(Y^*(t)\) is not
-known.
+identification is not attainable when true cancer status \(Y^*(t)\) is
+not known.
 
 \begin{figure}
 \caption{Directed acyclic graph representing the causal relationships encoded in the non-parametric structural equation model at time $t$ after conditioning on $\{W,\ \bar A(t - 1),\ D(t - 1),\ N(t)\}$.}
@@ -919,36 +921,37 @@ Cohort}\label{application-to-the-uaw-gm-cohort}}
 
 In the simulation study, we showed that under several scenarios
 compatible with our hypothetical causal structure, the AWKM survival
-estimator had small bias compared to the WKM estimator. The bias was
+estimator had a smaller bias than the WKM estimator. The bias was
 smaller when the cumulative incidence of the outcome was low and at
 later follow-up time points. Next, we estimated cancer-free survival in
 a real-world context. Using data from two plants participating in the
-UAW-GM Cohort study, we followed \(38\,553\) individuals starting from
-hire to 40 years after hire for incidence of digestive system cancers
+UAW-GM Cohort study, we followed \(26\,182\) individuals starting from
+hire to 35 years after hire for incidence of digestive system cancers
 (colon, rectal, esophageal, or stomach). This duration of follow-up
-spans the vast majority of individuals' working lifetimes. As in the
-simulation, the UAW-GM data were longitudinal data with baseline
+spans a sizable proportion of a usual worker's working lifetime. As in
+the simulation, the UAW-GM data were longitudinal data with baseline
 covariates, time-varying covariates, and a survival outcome.
 
 The exposures of interest were MWF of three types: straight, soluble,
 and synthetic (Byers 2006; F. Mirer 2003; F. E. Mirer 2010). Straight
-MWFs are hydrocarbon-based fluids whose use became widespread by the
-1920s. They continue to be widely used because of their simple
-formulation. In straight MWFs, hydrocarbons of different lengths are
-mixed together with other additives to attain different properties.
+MWFs are hydrocarbon-based fluids that became widely-used by the 1920s.
+They continue to occupy a large portion of the MWF market due to their
+simple formulation. In straight MWFs, hydrocarbons of different lengths
+are mixed together with other additives to attain different properties.
 Straight MWFs contain polycyclic aromatic hydrocarbons, long known to be
 carcinogenic (IARC 1973). Soluble oils are water-based oil emulsions
 first introduced in response to rising oil prices. They now make up the
-largest market share of MWFs (Childers 2006). Soluble oils are
-vulnerable to microbial contamination, so the addition of biocides is
-needed. However, their high lubricity makes soluble MWFs the most
-popular fluid type. Synthetic MWFs have the best toxicological profile,
-have no oil, and have a higher resistance to microbial growth. They were
-introduced into the MWF market in the second half of the 20th C., but
-fail to out-perform soluble MWFs in metalworking applications. Soluble
-and synthetic MWFs contain biocides, corrosion inhibitors, and
-chlorinated compounds, some classified as carcinogenic by the IARC (IARC
-1987).
+largest market share of MWFs (Childers 2006). Soluble MWFs are
+vulnerable to microbial contamination, so they contain biocides and
+chlorinated chemicals. Soluble MWFs have carcinogenic potential from
+both their oil components and their additives, but their high lubricity
+makes them the most popular fluid type. Synthetic MWFs have the best
+toxicological profile, have no oil, and have a higher resistance to
+microbial growth. They were introduced into the MWF market in the second
+half of the 20th C., but failed to out-perform soluble MWFs in
+industrial metalworking applications. Synthetic MWFs contain biocides,
+corrosion inhibitors, and chlorinated compounds, some classified as
+carcinogenic by the IARC (IARC 1987).
 
 The outcome of interest was digestive system cancer incidence. There is
 little past research linking digestive system cancers to MWF exposures,
@@ -958,25 +961,27 @@ linkage to Surveillance, Epidemiology, and End Results (SEER), which
 recorded cancer incidence cases starting on January 1, 1973. The cohort
 is comprised of individuals hired between 1938 and 1975. Cancer-free
 survival to the start of the registry was a left-filtering process
-possibly in the presence of the HWSE as investigated in the simulations.
-Over the 40 year follow-up period, vital status was obtained through the
+possibly in the presence of the HWSE, as was the case in simulations.
+Over the 35 year follow-up period, vital status was obtained through the
 Social Security Administration, the National Death Index, as well as
 records provided by the UAW. The exposure rules of interest in the
 applied analysis were different than those in the simulation study:
 \(a_0\) being exposed with 75\% chance in the years exposure was
 observed and \(a_1\) being exposed in the years exposure was observed.
-Weights were truncated at 1000. Binary exposure is defined to be
-exposure above the median level of exposure to straight, soluble, and
-synthetic MWFs or not. Counterfactual survival under rules \(a_0\) and
-\(a_1\) were estimated using the WKM and AWKM estimators. Baseline
-confounders included race, sex, plant, and year of hire. Time-varying
-confounders included age, cumulative time off, employment status, and
-exposure to the metalworking fluids exposure from the past year. These
-terms were included in the estimation of both the treatment and
-censoring mechanisms, which were estimated with stratification on every
-two years of follow-up. Summary statistics for the full study population
-and the digestive system cancer cases are presented in Table
-\ref{tab:popchar}.
+Weights were truncated at 1000. Exposure was binary and defined to be
+whether there was exposure above the median level of exposure to
+straight, soluble, and synthetic MWFs. Counterfactual survival under
+rules \(a_0\) and \(a_1\) were estimated using the WKM and AWKM
+estimators. Treatment and censoring mechanisms were estimated using
+logistic regression conditional on baseline and time-varying
+confounders. These logistic regressions were estimated with
+stratification by every two years of follow-up. Baseline confounders
+included race, sex, plant, and year of hire. Time-varying confounders
+included age, cumulative time off, employment status, and exposure to
+the metalworking fluids exposure from past years (3 years in the case of
+exposure and 6 years in the case of death due to censoring). Summary
+statistics for the full study population and those who experienced
+digestive system cancer are presented in Table \ref{tab:popchar}.
 
 \begin{table}[h]
 \caption{Study population characteristics.}
@@ -1020,25 +1025,25 @@ qualitatively by examining the distribution of the weights. The
 no-interference assumption may be problematized by the fact that there
 were a finite number of job types in the factory setting. If one worker
 operates a particular metalworking machine, then the the other workers
-are not able to operate that machine at that time. Instead, they may be
-assigned to assembly tasks, which have lower MWF exposure opportunities.
-That said, since these factories were quite large, there may be
-approximate independence. The consistency assumption is also
+would not be able to operate that machine at that time. Instead, they
+may be assigned to assembly tasks, which have lower MWF exposure
+opportunities. That said, since these factories were quite large, there
+may be approximate independence. The consistency assumption is also
 problematic. The MWFs of interest are complex chemical mixtures whose
-composition changes by design and by nature. Over the last several
-decades, the formulation of MWFs has changed significantly in reaction
-to performance needs and toxicity concerns (F. Mirer 2003; Byers 2006).
-The composition of MWFs also undergoes unintentional changes because of
-the nature of their use: MWFs are often applied in contexts where
-contamination by other substances and microbes is possible and chemical
-changes due to heat and pressure are likely. Indeed, there are
-substantial concerns over the carcinogenicity of the chemical species
-formed in the MWF mixtures that were not originally added (Hidajat et
-al. 2020). Concerns regarding the consistency assumption may be
-abrogated in part by adequate adjustment for secular and factory-level
-characteristics.
+composition underwent changes by design and by nature of their use. Over
+the last several decades, the formulation of MWFs has changed
+significantly in reaction to performance needs and toxicity concerns (F.
+Mirer 2003; Byers 2006). The composition of MWFs also undergoes
+unintentional changes over the course of their use: MWFs are often
+applied in contexts where contamination by other substances and microbes
+is possible and chemical changes due to heat and pressure are likely. In
+fact, concern over the carcinogenicity of MWFs includes concerns over
+chemical species formed in MWF mixtures that were not originally added
+(Hidajat et al. 2020). Concerns regarding the consistency assumption may
+be abrogated in part by adequate adjustment for secular and
+factory-level characteristics.
 
-Another key assumption meriting discussion is that of conditional
+Another key assumption meriting discussion is that of sequential
 ignorability. In order to achieve identification, even in the absence of
 left filtering, we need to have conditionally ignorable future exposure
 status and ignorable future censoring status at each time point given
@@ -1054,8 +1059,8 @@ given history was not as strong. In particular, workers may be assigned
 to certain tasks based on their specific skills and knowledge, which may
 be associated with structural privileges that confer a lower risk of
 deleterious health outcomes. The potential magnitude of this
-uncontrolled confounding may have been bounded, however. The education
-level of the workers in the cohort was homogeneous, and all cohort
+uncontrolled confounding may be bounded, however. Education level among
+workers in the cohort was approximately homogeneous, and all cohort
 members were members of the UAW union, which had uniform procedures in
 place for equitable access to training, wages, and career advancement
 (Harbison 1950; Barnard 2005). The presence of UAW policies support the
@@ -1067,16 +1072,16 @@ exposures) were randomly allocated.
 
 Estimated digestive system cancer-free curves under rules \(a_0\) and
 \(a_1\) applied to the three MWF types are presented in Figure
-\ref{fig:gm_survival}. The survival curves are more or less overlapping
-under the two exposure rules. Numeric values for the cancer-free
-survival and difference in cancer-free survival are presented in Tables
-\ref{tab:gm_survival} and \ref{tab:gm_differences}. The numeric
-summaries are consistent with the qualitative interpretation of the
-estimated survival curves; for all MWF types, expected survival time
-does not differ substantially across rules \(a_0\) and \(a_1\).
-Nonetheless, reducing exposure to straight and soluble MWFs does result
-in a longer survival time, though the difference is less than a month in
-time.
+\ref{fig:gm_survival}. Surprisingly, the survival curves were more or
+less overlapping under the two exposure rules. Numeric values for the
+cancer-free survival and difference in cancer-free survival are
+presented in Tables \ref{tab:gm_survival} and \ref{tab:gm_differences}.
+The numeric summaries were consistent with the qualitative
+interpretation of the estimated survival curves; expected survival time
+does not differ substantially comparing rules \(a_0\) and \(a_1\)
+applied to all MWF types. Nonetheless, reducing exposure to straight and
+soluble MWFs yielded a longer estimated survival time, though the
+difference was less than a month in time.
 
 \begin{figure}[h]
 \caption{Cancer-free survival over time since hire under interventions for exposure to straight, soluble, and synthetic metalworking fluids. The estimated inverse probability weighted Kaplan-Meier (WKM) survival curve is represented by the solid. The estimated Aalen-filtered inverse probability weighted Kaplan-Meier (AWKM) survival curve is represented by the dashed-line. Salmon color indicates survival and survival estimates under rule $a_0$; cyan color indicates those under rule $a_1$.}
@@ -1124,10 +1129,10 @@ censoring mechanisms were inadequate in distinguishing the units of
 analysis by their probability of following a certain exposure rule or of
 remaining alive. The distribution of the weights was very skewed.
 Without truncation, they would have been in the order of magnitude of
-\(10^{20}\) or higher. Distributional summaries of the cumulative
+\(10^{20}\) or even higher. Distributional summaries of the cumulative
 weights without truncation are presented in Table \ref{tab:gm_w}. The
 presence of extremely large weights suggests that our observed data were
-inadequate for answering the causal question of interest due to
+inadequate for answering the causal questions of interest due to
 practical violations in overlap (Petersen et al. 2012).
 
 \begin{table}[H]
@@ -1180,17 +1185,18 @@ adjusting for informative left truncation.
 The simulation permitted the evaluation of the estimators in clean,
 well-behaved scenarios, but the same luxury was not possible when using
 observed data. Several assumptions used in the simulation study were
-incompatible with what is known about cancer epidemiology. Firstly,
+incompatible with what is known about cancer etiology. Firstly,
 cumulative incidence in the simulations was close to 15\% (or higher)
 over a 20-year follow-up. This is an extraordinarily high risk of
 cancer, especially because most workers in the automotive manufacturing
 industry start their careers at a fairly young age. Digestive system
 cancers are among the most common forms of cancer in the Unite states,
-and in 35 years of follow-up, we were still only able to observe a
-cumulative incidence of less than 1\%. The simulation scenarios suggest
+but over 35 years of follow-up, we were only able to observe a
+cumulative incidence of less than 1\%. The simulation results suggested
 that the bias of the WKM and AWKM estimators is higher when cumulative
-incidence is higher, but when cumulative incidence is low, we rely on
-very few observations to index the risk sets.
+incidence is higher, but when cumulative incidence is low, there is a
+different problem: the reliance on few observations to index the risk
+sets.
 
 There are multiple opportunities for future work. The simulation study
 can be expanded to investigate subtler exposure-outcome effects. In the
@@ -1209,7 +1215,9 @@ analysis did not lag exposure status, which is standard practice in
 cancer epidemiology -- the biological responses to carcinogens do not
 occur until several years or decades after exposure. The true causal
 effects of MWF exposure may not yet be observable after 35 years of
-follow-up.
+follow-up. As follow-up in this cohort study continues, we will have the
+opportunity to investigate the carcinogenic effects of MWF exposure
+further.
 
 \newpage
 
