@@ -344,13 +344,13 @@ when exposure and censoring were controlled deterministically.
 
 The present project replicates the simulation and bias analyses
 presented in Chapter 3 of Izano (2017), embeds the problem in the
-non-parametric structural causal approach of Pearl (1995), and applies
-the WKM and AWKM estimators to the estimation of digestive-system
-cancer-free survival under exposure and no censoring rules in the UAW-GM
-Cohort. The \texttt{stremr} package was used to estimate the WKM and
-AWKM survival curves in both the simulation and the applied analyses
-(Sofrygin, van der Laan, and Neugebauer 2021). All code necessary for
-replicating the analyses presented here may be found on
+non-parametric structural causal approach of (\textbf{Pearl\_1995?}),
+and applies the WKM and AWKM estimators to the estimation of
+digestive-system cancer-free survival under exposure and no censoring
+rules in the UAW-GM Cohort. The \texttt{stremr} package was used to
+estimate the WKM and AWKM survival curves in both the simulation and the
+applied analyses (Sofrygin, van der Laan, and Neugebauer 2021). All code
+necessary for replicating the analyses presented here may be found on
 \href{https://github.com/kvntchn/gm-delayed-entry.git}{GitHub/kvntchn/gm-delayed-entry}.
 Note that running the script for the applied analyses will require
 additional permissions.
@@ -625,8 +625,9 @@ were intervenable. The causal effect was defined by contrasting the
 survival functions \(S_{a_1}(t) = 1 - \E{Y_{a_1}(t)}\) under rule
 \(a_1\) to \(S_{a_0}(t) = 1 - \E{Y_{a_0}(t)}\) that under rule \(a_0\).
 Note that this causal estimand was defined over \emph{a priori
-counterfactuals} not observable in the real world (Frangakis and Rubin
-2002). This approach is standard in epidemiologic studies.
+counterfactuals} not observable in the real world
+(\textbf{Frangakis\_2002?}). This approach is standard in epidemiologic
+studies.
 
 The survival function expresses the probability that a person following
 rule \(a\) is cancer-free at the end of time point \(t\). The expected
@@ -849,7 +850,7 @@ scenarios
 \caption{Cancer-free survival over time since hire in five simulation scenarios. The true (discrete) survival curve is represented by the solid lines. The average inverse probability weighted Kaplan-Meier (WKM) survival curve is represented by the dashed-line with short dashes. The average Aalen-filtered inverse probability weighted Kaplan-Meier (AWKM) survival curve is represented by the dashed-line with long dashes. Estimated survival curves were averaged over 250 replicates. Salmon color indicates survival and survival estimates under rule $a_0$ when workers are always unexposed. Cyan color indicates those under rule $a_1$ when workers are always exposed while employed.}
 \label{fig:survival}
 \begin{center}
-\includegraphics{/Users/kevinchen/Documents/2021 Fall/256 - Causal Inference/256-final/reports/resources/results.pdf}
+\includegraphics{/Users/kevinchen/eisen/gm-delayed-entry/reports/resources/results.pdf}
 \end{center}
 \end{figure}
 
@@ -930,11 +931,10 @@ smaller when the cumulative incidence of the outcome was low and at
 later follow-up time points. Next, we estimated cancer-free survival in
 a real-world context. Using data from two plants participating in the
 UAW-GM Cohort study, we followed \(26\,182\) individuals starting from
-hire to 35 years after hire for incidence of digestive system cancers
-(colon, rectal, esophageal, or stomach). This duration of follow-up
-spans a sizable proportion of a usual worker's working lifetime. As in
-the simulation, the UAW-GM data were longitudinal data with baseline
-covariates, time-varying covariates, and a survival outcome.
+hire to 65 years after hire for incidence of digestive system cancers
+(colon, rectal, esophageal, or stomach). As in the simulation, the
+UAW-GM data were longitudinal data with baseline covariates,
+time-varying covariates, and a survival outcome.
 
 The exposures of interest were MWF of three types: straight, soluble,
 and synthetic (Byers 2006; F. Mirer 2003; F. E. Mirer 2010). Straight
@@ -943,19 +943,21 @@ They continue to occupy a large portion of the MWF market due to their
 simple formulation. In straight MWFs, hydrocarbons of different lengths
 are mixed together with other additives to attain different properties.
 Straight MWFs contain polycyclic aromatic hydrocarbons, long known to be
-carcinogenic (IARC 1973). Soluble oils are water-based oil emulsions
-first introduced in response to rising oil prices. They now make up the
-largest market share of MWFs (Childers 2006). Soluble MWFs are
-vulnerable to microbial contamination, so they contain biocides and
-chlorinated chemicals. Soluble MWFs have carcinogenic potential from
-both their oil components and their additives, but their high lubricity
-makes them the most popular fluid type. Synthetic MWFs have the best
-toxicological profile, have no oil, and have a higher resistance to
-microbial growth. They were introduced into the MWF market in the second
-half of the 20th C., but failed to out-perform soluble MWFs in
-industrial metalworking applications. Synthetic MWFs contain biocides,
-corrosion inhibitors, and chlorinated compounds, some classified as
-carcinogenic by the IARC (IARC 1987).
+carcinogenic (\emph{IARC Monographs on the Evaluation of Carcinogenic
+Risk of the Chemical to Man: Certain Polycyclic Aromatic Hydrocarbons
+and Heterocyclic Compounds} 1973). Soluble oils are water-based oil
+emulsions first introduced in response to rising oil prices. They now
+make up the largest market share of MWFs (\textbf{Childers\_2006?}).
+Soluble MWFs are vulnerable to microbial contamination, so they contain
+biocides and chlorinated chemicals. Soluble MWFs have carcinogenic
+potential from both their oil components and their additives, but their
+high lubricity makes them the most popular fluid type. Synthetic MWFs
+have the best toxicological profile, have no oil, and have a higher
+resistance to microbial growth. They were introduced into the MWF market
+in the second half of the 20th C., but failed to out-perform soluble
+MWFs in industrial metalworking applications. Synthetic MWFs contain
+biocides, corrosion inhibitors, and chlorinated compounds, some
+classified as carcinogenic by the IARC (\textbf{IARC\_1987?}).
 
 The outcome of interest was digestive system cancer incidence. There is
 little past research linking digestive system cancers to MWF exposures,
@@ -966,12 +968,12 @@ recorded cancer incidence cases starting on January 1, 1973. The cohort
 is comprised of individuals hired between 1938 and 1975. Cancer-free
 survival to the start of the registry was a left-filtering process
 possibly in the presence of the HWSE, as was the case in simulations.
-Over the 35 year follow-up period, vital status was obtained through the
+Over the 65 year follow-up period, vital status was obtained through the
 Social Security Administration, the National Death Index, as well as
 records provided by the UAW. The exposure rules of interest in the
 applied analysis were different than those in the simulation study:
-\(a_0\) being exposed with 75\% chance in the years exposure was
-observed and \(a_1\) being exposed in the years exposure was observed.
+\(a_0\) having cumulative exposure of more than 0.05
+mg/m\textsuperscript{3} years and \(a_1\) having no cumulative exposure.
 Weights were truncated at 1000. Exposure was binary and defined to be
 whether there was exposure above the median level of exposure to
 straight, soluble, and synthetic MWFs. Counterfactual survival under
@@ -1091,36 +1093,36 @@ difference was less than a month in time.
 \caption{Cancer-free survival over time since hire under interventions for exposure to straight, soluble, and synthetic metalworking fluids. The estimated inverse probability weighted Kaplan-Meier (WKM) survival curve is represented by the solid. The estimated Aalen-filtered inverse probability weighted Kaplan-Meier (AWKM) survival curve is represented by the dashed-line. Salmon color indicates survival and survival estimates under rule $a_0$; cyan color indicates those under rule $a_1$.}
 \label{fig:gm_survival}
 \begin{center}
-\includegraphics{/Users/kevinchen/Documents/2021 Fall/256 - Causal Inference/256-final/reports/resources/gm_results.pdf}
+\includegraphics{/Users/kevinchen/eisen/gm-delayed-entry/reports/resources/gm_results.pdf}
 \end{center}
 \end{figure}
 
 \begin{table}[H]
 \centering
-\caption{Estimated cancer-free survival time over 35-year follow-up.} 
+\caption{Estimated cancer-free survival time over 65-year follow-up.} 
 \label{tab:gm_survival}
-\begin{tabular}{llrrr}
+\begin{tabular}{llrrrr}
   \toprule
-Rule & Estimator & Straight & Soluble & Synthetic \\ 
+Rule & Estimator & Straight & Soluble & Synthetic & Any \\ 
   \midrule
-$a_0$ & WKM & 29.9606 & 29.9605 & 29.9626 \\ 
-  $a_0$ & AWKM & 29.9337 & 29.9398 & 29.9443 \\ 
+$a_0$ & WKM & 55.9808 & 56.0093 & 56.2051 & 55.8072 \\ 
+  $a_0$ & AWKM & 55.8864 & 55.8952 & 56.1300 & 55.6712 \\ 
    \midrule
-$a_1$ & WKM & 29.9600 & 29.9584 & 29.9648 \\ 
-  $a_1$ & AWKM & 29.9325 & 29.9360 & 29.9479 \\ 
+$a_1$ & WKM & 56.2258 & 56.2760 & 56.1323 &  \\ 
+  $a_1$ & AWKM & 56.0953 & 56.1824 & 56.0066 &  \\ 
    \bottomrule
 \end{tabular}
 \end{table}
 \begin{table}[H]
 \centering
-\caption{Estimated difference in average cancer-free survival time over 35-year follow-up comparing rule $a_1$ exposed above the median level of exposure with probability 1\% to $a_0$ never exposed.} 
+\caption{Estimated difference in average cancer-free survival time over 65-year follow-up comparing rule $a_1$ exposed above the median level of exposure with probability 1\% to $a_0$ never exposed.} 
 \label{tab:gm_differences}
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrrr}
   \toprule
-Estimator & Straight & Soluble & Synthetic \\ 
+Estimator & Straight & Soluble & Synthetic & Any \\ 
   \midrule
-WKM & -0.0006 & -0.0021 & 0.0022 \\ 
-  AWKM & -0.0012 & -0.0039 & 0.0037 \\ 
+WKM & 0.2449 & 0.2667 & -0.0727 &  \\ 
+  AWKM & 0.2089 & 0.2872 & -0.1233 &  \\ 
    \bottomrule
 \end{tabular}
 \end{table}
@@ -1141,24 +1143,28 @@ practical violations in overlap (Petersen et al. 2012).
 
 \begin{table}[H]
 \centering
-\caption{Summary statistics for the cumulative weights used for the WKM estimator at $t = 1$ and $t = 35$ years since hire for each metalworking fluid type and exposure rule.} 
+\caption{Summary statistics for the cumulative weights used for the WKM estimator at $t = 1$ and $t = 65$ years since hire for each metalworking fluid type and exposure rule.} 
 \label{tab:gm_w}
 \begin{tabular}{llrrrrrrr}
   \toprule
 MWF type & Rule & $t$ & Minimum & Q1 & Median & Mean & Q3 & Maximum \\ 
   \midrule
-Straight & $a_0$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
-   & $a_1$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
-  Soluble & $a_0$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
-   & $a_1$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
-  Synthetic & $a_0$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
-   & $a_1$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\ 
-  Straight & $a_0$ &  35 & 0.00 & 2.25 & 4.71 & $9.7 \times 10^{16}$ & 4622.00 & $7.3 \times 10^{20}$ \\ 
-   & $a_1$ &  35 & 0.00 & 2.70 & 13.40 & $1.3 \times 10^{18}$ & 22142.45 & $9.8 \times 10^{21}$ \\ 
-  Soluble & $a_0$ &  35 & 0.00 & 4.04 & 858.96 & $5.2 \times 10^{15}$ & 74610.19 & $2.3 \times 10^{19}$ \\ 
-   & $a_1$ &  35 & 0.00 & 158.56 & 6685.12 & $2.3 \times 10^{17}$ & 1227858.13 & $1.7 \times 10^{21}$ \\ 
-  Synthetic & $a_0$ &  35 & 0.00 & 1.02 & 1.25 & $3.7 \times 10^{19}$ & 8.85 & $3.2 \times 10^{23}$ \\ 
-   & $a_1$ &  35 & 0.00 & 1.02 & 1.36 & $2.1 \times 10^{21}$ & 22.63 & $1.8 \times 10^{25}$ \\ 
+Straight & $a_0$ &   1 &   1 &   1 &   1 &   1 &   1 &   1 \\ 
+   & $a_1$ &   1 &   1 &   1 &   1 &   1 &   1 &   1 \\ 
+  Soluble & $a_0$ &   1 &   1 &   1 &   1 &   1 &   1 &   1 \\ 
+   & $a_1$ &   1 &   1 &   1 &   1 &   1 &   1 &   1 \\ 
+  Synthetic & $a_0$ &   1 &   1 &   1 &   1 &   1 &   1 &   1 \\ 
+   & $a_1$ &   1 &   1 &   1 &   1 &   1 &   1 &   1 \\ 
+  Any & $a_0$ &   1 &   1 &   1 &   1 &   1 &   1 &   1 \\ 
+   & $a_1$ &   1 &   1 &   1 &   1 &   1 &   1 &   1 \\ 
+  Straight & $a_0$ &  57 &   0 & 4.6 & 5.6 &  93 & $2 \times 10^{2}$ & $3.9 \times 10^{2}$ \\ 
+   & $a_1$ &  57 &   0 &   0 &   0 & 2.4 & 5.2 & 5.8 \\ 
+  Soluble & $a_0$ &  57 &   0 & 3.9 & $1.5 \times 10^{2}$ & $1.7 \times 10^{2}$ & $3.1 \times 10^{2}$ & $3.8 \times 10^{2}$ \\ 
+   & $a_1$ &  57 &   0 &   0 &   0 &  41 &   0 & $3.7 \times 10^{2}$ \\ 
+  Synthetic & $a_0$ &  57 &   0 & 2.6 & 3.2 &  97 & 3.4 & $8.5 \times 10^{2}$ \\ 
+   & $a_1$ &  57 &   0 & 2.5 & 2.9 & 2.4 & 3.3 & 3.6 \\ 
+  Any & $a_0$ &  57 &   0 & 3.6 &  15 & $1.4 \times 10^{2}$ & $3 \times 10^{2}$ & $4.1 \times 10^{2}$ \\ 
+   & $a_1$ &  57 &   0 &   0 &   0 &   0 &   0 &   0 \\ 
    \bottomrule
 \end{tabular}
 \end{table}
@@ -1167,7 +1173,7 @@ Straight & $a_0$ &   1 & 1.00 & 1.00 & 1.00 &   1 & 1.00 &   1 \\
 \caption{Median of the cumulative weights for each year since hire with ribbons delimiting the range of values calculated. Salmon color corresponds to the weights used in the estimation of the survival curve under rule $a_0$; cyan corresponds to those for rule $a_1$.}
 \label{fig:gm_weights}
 \begin{center}
-\includegraphics{/Users/kevinchen/Documents/2021 Fall/256 - Causal Inference/256-final/reports/resources/gm_weights.pdf}
+\includegraphics{/Users/kevinchen/eisen/gm-delayed-entry/reports/resources/gm_weights.pdf}
 \end{center}
 \end{figure}
 
@@ -1249,10 +1255,6 @@ During the Reuther Years, 1935-1970}. Wayne State University Press.
 \leavevmode\hypertarget{ref-Byers_2006}{}%
 Byers, Jerry P. 2006. \emph{Metalworking Fluids}. CRC Press.
 
-\leavevmode\hypertarget{ref-Childers_2006}{}%
-Childers, Jean. 2006. {``The Chemistry of Metalworking Fluids.''} In
-\emph{Metalworking Fluids}. CRC Press.
-
 \leavevmode\hypertarget{ref-Eisen_2001}{}%
 Eisen, Ellen A, Judith Bardin, Rebecca Gore, Susan R Woskie, Marilyn F
 Hallock, and Richard R Monson. 2001. {``Exposure-Response Models Based
@@ -1265,10 +1267,6 @@ Eisen, Ellen A, Paige E Tolbert, Richard R Monson, and Thomas J Smith.
 1992. {``Mortality Studies of Machining Fluid Exposure in the Automobile
 Industry {I}: A Standardized Mortality Ratio Analysis.''} \emph{American
 Journal of Industrial Medicine} 22 (6): 809--24.
-
-\leavevmode\hypertarget{ref-Frangakis_2002}{}%
-Frangakis, Constantine E, and Donald B Rubin. 2002. {``Principal
-Stratification in Causal Inference.''} \emph{Biometrics} 58 (1): 21--29.
 
 \leavevmode\hypertarget{ref-Garcia_2017}{}%
 Garcia, Erika, Sally Picciotto, Sadie Costello, Patrick T Bradshaw, and
@@ -1307,16 +1305,9 @@ Rubber Factory Workers.''} \emph{Occup Environ Med} 77 (5): 316--23.
 \url{https://doi.org/10.1136/oemed-2019-106269}.
 
 \leavevmode\hypertarget{ref-IARC_1973}{}%
-IARC. 1973. \emph{IARC Monographs on the Evaluation of Carcinogenic Risk
-of the Chemical to Man: Certain Polycyclic Aromatic Hydrocarbons and
-Heterocyclic Compounds}. Vol. 3. World Health Organization International
-Agency for Research on Cancer.
-
-\leavevmode\hypertarget{ref-IARC_1987}{}%
----------. 1987. \emph{IARC Monographs on the Evaluation of the
-Carcinogenic Risk of Chemicals to Humans. Overall Evaluations of
-Carcinogenicity: An Updating of IARC Monographs, Volumes 1 to 42}.
-\emph{World Health Organization}. Vol. 7. World Health Organization
+\emph{IARC Monographs on the Evaluation of Carcinogenic Risk of the
+Chemical to Man: Certain Polycyclic Aromatic Hydrocarbons and
+Heterocyclic Compounds}. 1973. Vol. 3. World Health Organization
 International Agency for Research on Cancer.
 
 \leavevmode\hypertarget{ref-Izano_2017_thesis}{}%
@@ -1357,10 +1348,6 @@ Naimi, Ashley I, Stephen R Cole, Michael G Hudgens, M Alan Brookhart,
 and David B Richardson. 2013. {``Assessing the Component Associations of
 the Healthy Worker Survivor Bias: Occupational Asbestos Exposure and
 Lung Cancer Mortality.''} \emph{Annals of Epidemiology} 23 (6): 334--41.
-
-\leavevmode\hypertarget{ref-Pearl_1995}{}%
-Pearl, Judea. 1995. {``Causal Diagrams for Empirical Research.''}
-\emph{Biometrika} 82 (4): 669--88.
 
 \leavevmode\hypertarget{ref-Petersen_2012}{}%
 Petersen, Maya L, Kristin E Porter, Susan Gruber, Yue Wang, and Mark J

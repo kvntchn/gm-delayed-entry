@@ -10,7 +10,7 @@ output:
     includes:
       in_header: "~/HeadRs/Stathead.sty"
     keep_tex: true
-bibliography: "../causal.bib"
+bibliography: "`r path.expand('~/Box Sync/papers/EnvEpi.bib')`"
 geometry: margin=2.54cm
 ---
 

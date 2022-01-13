@@ -28,12 +28,14 @@ gm.surv <- rbindlist(list(
 	rbindlist(list(str_a0[[2]], str_a1[[2]]), idcol = "rule"),
 	rbindlist(list(sol_a0[[2]], sol_a1[[2]]), idcol = "rule"),
 	rbindlist(list(syn_a0[[2]], syn_a1[[2]]), idcol = "rule")
+	# rbindlist(list(any_a0[[2]], any_a1[[2]]), idcol = "rule")
 ), idcol = "mwf")
 
 gm.w <- rbindlist(list(
 	rbindlist(list(str_a0[[1]], str_a1[[1]]), idcol = "rule"),
 	rbindlist(list(sol_a0[[1]], sol_a1[[1]]), idcol = "rule"),
 	rbindlist(list(syn_a0[[1]], syn_a1[[1]]), idcol = "rule")
+	# rbindlist(list(any_a0[[1]], any_a1[[1]]), idcol = "rule")
 ), idcol = "mwf")
 
 

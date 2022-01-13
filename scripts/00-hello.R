@@ -16,6 +16,7 @@ exposure.lag <- 15
 # Load full data
 if (!"cohort_analytic" %in% ls()) {
 	cohort_analytic <- box_read(880479268725)
+	cohort_analytic <- cohort_analytic[,-"exposure.lag"]
 	cohort_analytic[,(c("straight", "soluble", "synthetic")) := lapply(
 		list(straight, soluble, synthetic), function(x) {
 			return(shift(x, get("exposure.lag", envir = .GlobalEnv), 0))
