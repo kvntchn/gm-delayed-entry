@@ -261,7 +261,7 @@ get_estimates_gm <- function(
 # 	geom_step() +
 # 	theme_bw()
 
-mwf <- "Synthetic"
+# mwf <- "Synthetic"
 # Point estimate ###
 if (!is.null(mwf)) {
 	message("\n", mwf, ", a = 0")
@@ -293,8 +293,8 @@ if (!is.null(mwf)) {
 	message("BS started at ", start, "\n")
 	# Progress bar
 	pb <- txtProgressBar(min = 0, max = B, style = 3)
-	bs <- lapply(1:B, function(b = 1) {
-		
+	bs <- list()
+	for (b in 1:B) {
 		bs.dt <- merge(
 			who.mcmc[[b]],
 			gm.dt[studyno %in% who.mcmc[[b]]$studyno,
@@ -318,9 +318,8 @@ if (!is.null(mwf)) {
 		# Set progressbar
 		setTxtProgressBar(pb, b)
 		
-		return(list(a0 = a0, a1 = a1))
-	})
-	
-	saveRDS(a0, here("resources", paste0(tolower(mwf), "_bs_gm", ".rds")))
+		bs[[b]] <- list(a0 = a0, a1 = a1)
+	}
+	saveRDS(bs, here("resources", paste0(tolower(mwf), "_bs_gm", ".rds")))
 }
 
