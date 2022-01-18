@@ -10,8 +10,8 @@ library(magrittr)
 library(data.table)
 library(survival)
 
-library(boxr); box_auth()
 if (!"cohort_analytic" %in% ls()) {
+	library(boxr); box_auth()
 	source(here::here("scripts", "00-hello.R"))
 	message("Note. Exposure lagged ", exposure.lag, " years")
 }
@@ -269,7 +269,7 @@ if (!is.null(mwf)) {
 												 dt = copy(gm.dt),
 												 mwf = mwf)
 	saveRDS(a0, here("resources", paste0(tolower(mwf), "0_gm", ".rds")))
-
+	
 	message("\n", mwf, ", a = 1")
 	a1 <- get_estimates_gm(a = 1,
 												 dt = copy(gm.dt),
@@ -303,6 +303,7 @@ if (!is.null(mwf)) {
 							"Straight", "Soluble", "Synthetic",
 							"cum_Straight", "cum_Soluble", "cum_Synthetic", "Any", "N"),
 						with = F],
+			by = "studyno",
 			all.x = T, allow.cartesian = T
 		)
 		bs.dt[,`:=`(studyno = id,
