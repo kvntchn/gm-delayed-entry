@@ -10,8 +10,8 @@ library(magrittr)
 library(data.table)
 library(survival)
 
-library(boxr); box_auth()
 if (!"cohort_analytic" %in% ls()) {
+	library(boxr); box_auth()
 	source(here::here("scripts", "00-hello.R"))
 	message("Note. Exposure lagged ", exposure.lag, " years")
 }
@@ -301,6 +301,7 @@ if ("mwf" %in% ls()) {
 							"Straight", "Soluble", "Synthetic",
 							"cum_Straight", "cum_Soluble", "cum_Synthetic", "Any", "N"),
 						with = F],
+			by = "studyno",
 			all.x = T, allow.cartesian = T
 		)
 		bs.dt[,`:=`(studyno = id,
