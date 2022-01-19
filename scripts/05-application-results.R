@@ -70,24 +70,35 @@ gm_w.tab <- dcast(gm.w[,.(
 	value.var = "summary"
 )
 
-# gm.surv %>% melt(
-# 	measure.vars = c("WKM", "AWKM"),
-# 	variable.name = "Estimator",
-# 	value.name = "Survival"
-# ) %>% ggplot(aes(
-# 	x = t, y = Survival,
-# 	lty = Estimator,
-# 	color = rule
-# )) + geom_step() + facet_grid(mwf ~ .) +
-# 	labs(
-# 		y = "Cancer-free survival",
-# 		x = "Years since hire") +
-# 	theme_bw() + theme(
-# 		legend.title = element_blank(),
-# 		legend.position = 'bottom'
-# 	) -> gm.surv.ggplot
-# 
-# gm.surv.ggplot
+gm.surv$rule <- factor(
+	gm.surv$rule,
+	unique(gm.surv$rule),
+	c("Observed exposure", "No exposure")
+)
+gm.surv[mwf == "Straight"] %>% melt(
+	measure.vars = c("WKM", "AWKM"),
+	variable.name = "Estimator",
+	value.name = "Survival"
+) %>% ggplot(aes(
+	x = t, y = Survival,
+	lty = Estimator,
+	color = rule
+)) + geom_step() +
+	# facet_grid(mwf ~ .) +
+	labs(
+		lty = "Estimator",
+		color = "Intervention",
+		y = "Digestive cancer-free survival",
+		x = "Years since hire") +
+	theme_bw() + theme(
+		legend.title = element_text(size = 10),
+		legend.position = 'bottom',
+		legend.margin = margin(l = 0, r = 0, b = 0, t = 0, unit='cm'),
+		legend.box.margin = margin(l = 0, r = 0, b = -0.1, t = -0.1, unit='cm'),
+		legend.box = "vertical"
+	) -> gm.surv.ggplot
+
+gm.surv.ggplot
 # 
 # gm_w.tab[estimator == "WKM"] %>% ggplot(
 # 	aes(x = t,
@@ -108,11 +119,11 @@ gm_w.tab <- dcast(gm.w[,.(
 # 
 # gm.w.ggplot
 # 
-# tikz(here("reports/resources", "gm_results.tex"),
-# 		 width = 4.5, height = 5, standAlone = T)
-# gm.surv.ggplot
-# dev.off()
-# lualatex("gm_results\\.tex", here("reports/resources"))
+tikz(here("reports/resources", "gm_results.tex"),
+		 width = 4, height = 3.5, standAlone = T)
+gm.surv.ggplot
+dev.off()
+lualatex("gm_results\\.tex", here("reports/resources"))
 # 
 # 
 # tikz(here("reports/resources", "gm_weights.tex"),

@@ -159,8 +159,8 @@ setorder(gm_survival.tab, Rule, Estimator)
 gm_differences.tab <- gm_survival.tab[,.(
 		Straight  = Straight[2] - Straight[1],
 		Soluble   = Soluble[2] - Soluble[1],
-		Synthetic = Synthetic[2] - Synthetic[1],
-		Any = Any[2] - Any[1]
+		Synthetic = Synthetic[2] - Synthetic[1]
+		# Any = Any[2] - Any[1]
 	), .(Estimator)]
 
 gm_ci.tab <- dcast(
@@ -177,11 +177,11 @@ gm_ci.tab <- dcast(
 gm_cir.tab <- gm_ci.tab[,.(
 		Straight  = Straight[2]/Straight[1],
 		Soluble   = Soluble[2]/Soluble[1],
-		Synthetic = Synthetic[2]/Synthetic[1],
-		Any = Any[2]/Any[1]
+		Synthetic = Synthetic[2]/Synthetic[1]
+		# Any = Any[2]/Any[1]
 	), .(Estimator)]
 
-pander(gm_cir.tab)
+# pander(gm_differences.tab); pander(gm_cir.tab)
 ```
 
 Estimated digestive system cancer-free curves under rules $a_0$ and $a_1$ applied to the three MWF types are presented in Figure \ref{fig:gm_survival}. Surprisingly, the survival curves were more or less overlapping under the two exposure rules. Numeric values for the cancer-free survival and difference in cancer-free survival are presented in Tables \ref{tab:gm_survival} and \ref{tab:gm_differences}. The numeric summaries were consistent with the qualitative interpretation of the estimated survival curves; expected survival time does not differ substantially comparing rules $a_0$ and $a_1$ applied to all MWF types. Nonetheless, reducing exposure to straight and soluble MWFs yielded a longer estimated survival time, though the difference was less than a month in time.

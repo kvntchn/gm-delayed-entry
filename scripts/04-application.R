@@ -261,34 +261,32 @@ get_estimates_gm <- function(
 # 	geom_step() +
 # 	theme_bw()
 
-# mwf <- "Synthetic"
+# mwf <- "Straight"
 # Point estimate ###
-if (!is.null(mwf)) {
+if ("mwf" %in% ls()) {
 	message("\n", mwf, ", a = 0")
 	a0 <- get_estimates_gm(a = 0,
 												 dt = copy(gm.dt),
 												 mwf = mwf)
 	saveRDS(a0, here("resources", paste0(tolower(mwf), "0_gm", ".rds")))
-
+	
 	message("\n", mwf, ", a = 1")
 	a1 <- get_estimates_gm(a = 1,
 												 dt = copy(gm.dt),
 												 mwf = mwf)
 	saveRDS(a1, here("resources", paste0(tolower(mwf), "1_gm", ".rds")))
-}
-
-# Bootstrap ###
-studyno <- unique(gm.dt$studyno)
-B <- 500
-# set.seed(1240)
-# who.mcmc <- lapply(1:B, function(b = 1) {
-# 	who.mcmc <- data.table(studyno = sample(studyno, replace = T))
-# 	who.mcmc$id <- 1:nrow(who.mcmc)
-# 	return(who.mcmc)
-# 	})
-# saveRDS(who.mcmc, here("resources", "who_mcmc.rds"))
-who.mcmc <- readRDS(here("resources", "who_mcmc.rds"))
-if (!is.null(mwf)) {
+	
+	# Bootstrap ###
+	studyno <- unique(gm.dt$studyno)
+	B <- 500
+	# set.seed(1240)
+	# who.mcmc <- lapply(1:B, function(b = 1) {
+	# 	who.mcmc <- data.table(studyno = sample(studyno, replace = T))
+	# 	who.mcmc$id <- 1:nrow(who.mcmc)
+	# 	return(who.mcmc)
+	# 	})
+	# saveRDS(who.mcmc, here("resources", "who_mcmc.rds"))
+	who.mcmc <- readRDS(here("resources", "who_mcmc.rds"))
 	start <- Sys.time()
 	message("BS started at ", start, "\n")
 	# Progress bar

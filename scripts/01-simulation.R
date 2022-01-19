@@ -20,7 +20,8 @@ sim_data <- function(
 	d = NULL,
 	a = NULL,
 	long = T,
-	param = sim_param) {
+	param = sim_param,
+	R.rdist = function(x) {runif(x, 0, 20)}) {
 	
 	env.current <- environment()
 	
@@ -33,7 +34,7 @@ sim_data <- function(
 				runif(n)
 			}))
 	
-	R <- runif(n, 0, 20)
+	R <- R.rdist(n)
 	W <- rbinom(n, 1, param$p_W)
 	S <- rbinom(n, 1, param$p_S)
 	H.k <- H.1 <- rbinom(n, 1, param$p_H)
@@ -164,7 +165,7 @@ sim_data <- function(
 		
 		ldt[, obs := as.integer(t + 1 >= R), id]
 		ldt[,Y_obs := {
-			if (sum(Y[1:floor(R[1])]) > 0) {
+			if (sum(Y[1:min(floor(R[1]), K)]) > 0) {
 				Y_obs <- rep(0, .N)
 			} else {
 				Y_obs <- Y

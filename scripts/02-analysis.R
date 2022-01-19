@@ -23,11 +23,12 @@ get_estimates <- function(
 	g_a = "A ~ W + shiftA",
 	g_d = "D ~ W + barA",
 	stratify = list(D = paste0("t == ", 1:20),
-									A = paste0("t == ", 1:20))
+									A = paste0("t == ", 1:20)),
+	R.rdist = function(x) {runif(x, 0, 20)}
 ) {
 	
 	# message("Simulating...")
-	sim.dt <- sim_data(scenario, a = a)
+	sim.dt <- sim_data(scenario, a = a, R.rdist = R.rdist)
 	sim.dt[,`:=`(
 		shiftA = shift(A, 1, 0),
 		barA = shift(as.integer(cumsum(A) > 0), 1, 0)
@@ -89,8 +90,8 @@ get_estimates <- function(
 # 	geom_step() +
 # 	theme_bw()
 
-get_truth <- function(scenario, a, n = 5e5) {
-	dt <- sim_data(scenario, n = n, a = a, d = 0, long = F)
+get_truth <- function(scenario, a, n = 5e5, R.rdist = function(x) {runif(x, 0, 20)}) {
+	dt <- sim_data(scenario, n = n, a = a, d = 0, long = F, R.rdist = R.rdist)
 	km <- survfit(Surv(last_t, status) ~ 1, data = dt[,.(last_t, status)])
 	return(data.table(
 		t = 1:20,
@@ -101,18 +102,18 @@ get_truth <- function(scenario, a, n = 5e5) {
 # saveRDS(truth_a0, here("resources", "truth_a0.rds"))
 # truth_a1 <- lapply(1:5, get_truth, a = 1, n = 5e4)
 # saveRDS(truth_a1, here("resources", "truth_a1.rds"))
-
-M <- 250
-pb <- txtProgressBar(min = 0, max = M, style = 3)
-message("\nScenario ", scenario, ", a = 0")
-a0 <- lapply(1:M, function(i) {
-	setTxtProgressBar(pb, i)
-	return(get_estimates(scenario))})
-saveRDS(a0, here("resources", paste0("a0_scenario", scenario, ".rds")))
-
-pb <- txtProgressBar(min = 0, max = M, style = 3)
-message("\nScenario ", scenario, ", a = 1")
-a1 <- lapply(1:M, function(i) {
-	setTxtProgressBar(pb, i)
-	return(get_estimates(scenario, a = 1))})
-saveRDS(a1, here("resources", paste0("a1_scenario", scenario, ".rds")))
+# 
+# M <- 250
+# pb <- txtProgressBar(min = 0, max = M, style = 3)
+# message("\nScenario ", scenario, ", a = 0")
+# a0 <- lapply(1:M, function(i) {
+# 	setTxtProgressBar(pb, i)
+# 	return(get_estimates(scenario))})
+# saveRDS(a0, here("resources", paste0("a0_scenario", scenario, ".rds")))
+# 
+# pb <- txtProgressBar(min = 0, max = M, style = 3)
+# message("\nScenario ", scenario, ", a = 1")
+# a1 <- lapply(1:M, function(i) {
+# 	setTxtProgressBar(pb, i)
+# 	return(get_estimates(scenario, a = 1))})
+# saveRDS(a1, here("resources", paste0("a1_scenario", scenario, ".rds")))
