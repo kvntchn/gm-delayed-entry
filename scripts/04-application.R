@@ -10,6 +10,10 @@ library(magrittr)
 library(data.table)
 library(survival)
 
+if (!"mwf" %in% ls()) {
+	mwf <- "Straight"
+}
+
 if (!"cohort_analytic" %in% ls()) {
 	library(boxr); box_auth()
 	source(here::here("scripts", "00-hello.R"))
@@ -26,6 +30,7 @@ gm.dt <- cohort_analytic[year >= year(yin) & year < (year(yin) + years_fu) & (
 gm.dt <- gm.dt[plant %in% 1:2]
 # gm.dt <- gm.dt[sex == "M"]
 gm.dt[, `:=`(
+	# canc = canc_lu
 	canc = ifelse(
 		canc_corec == 1 | canc_es == 1 | canc_st == 1, 1,
 		ifelse(canc_corec == 2 | canc_es == 2 | canc_st == 2, 2, 0))
@@ -205,10 +210,25 @@ get_estimates_gm <- function(
 	
 	# Fit PS
 	# message("Fitting PS")
+	
+	require(sl3)
+	lrnr_mean <- Lrnr_mean$new()
+	lrnr_xgb <- Lrnr_xgboost$new(nrounds = 15)
+	lrnr_glm <- Lrnr_glm_fast$new()
+	lrnr_rf <- make_learner(Lrnr_ranger)
+	## Stack the above candidates:
+	lrnr_stack <- Stack$new(lrnr_mean, 
+													lrnr_xgb,
+													lrnr_glm,
+													lrnr_rf)
+	lrnr_sl <- Lrnr_sl$new(learners = lrnr_stack, metalearner = Lrnr_solnp$new())
+	
 	dt.stremr <- fitPropensity(
 		dt.stremr,
 		gform_TRT = g_a,
 		gform_CENS = g_d,
+		models_TRT = lrnr_sl,
+		models_CENS = lrnr_sl,
 		stratify_TRT = stratify,
 		stratify_CENS = stratify,
 	)
@@ -261,7 +281,7 @@ get_estimates_gm <- function(
 # 	geom_step() +
 # 	theme_bw()
 
-# mwf <- "Straight"
+# mwf <- "Synthetic"
 # Point estimate ###
 if ("mwf" %in% ls()) {
 	message("\n", mwf, ", a = 0")
@@ -276,49 +296,49 @@ if ("mwf" %in% ls()) {
 												 mwf = mwf)
 	saveRDS(a1, here("resources", paste0(tolower(mwf), "1_gm", ".rds")))
 	
-	# Bootstrap ###
-	studyno <- unique(gm.dt$studyno)
-	B <- 500
-	# set.seed(1240)
-	# who.mcmc <- lapply(1:B, function(b = 1) {
-	# 	who.mcmc <- data.table(studyno = sample(studyno, replace = T))
-	# 	who.mcmc$id <- 1:nrow(who.mcmc)
-	# 	return(who.mcmc)
-	# 	})
-	# saveRDS(who.mcmc, here("resources", "who_mcmc.rds"))
-	who.mcmc <- readRDS(here("resources", "who_mcmc.rds"))
-	start <- Sys.time()
-	message("BS started at ", start, "\n")
-	# Progress bar
-	pb <- txtProgressBar(min = 0, max = B, style = 3)
-	bs <- list()
-	for (b in 1:B) {
-		bs.dt <- merge(
-			who.mcmc[[b]],
-			gm.dt[studyno %in% who.mcmc[[b]]$studyno,
-						c("studyno", "year", "canc", "other_canc", "All causes",
-							"R", "Plant", "Race", "Sex", "Hire", "Age", "Off",
-							"Straight", "Soluble", "Synthetic",
-							"cum_Straight", "cum_Soluble", "cum_Synthetic", "Any", "N"),
-						with = F],
-			by = "studyno",
-			all.x = T, allow.cartesian = T
-		)
-		bs.dt[,`:=`(studyno = id,
-								id = studyno)]
-		
-		a0 <- get_estimates_gm(a = 0,
-													 dt = copy(bs.dt),
-													 mwf = mwf)
-		
-		a1 <- get_estimates_gm(a = 1,
-													 dt = copy(bs.dt),
-													 mwf = mwf)
-		# Set progressbar
-		setTxtProgressBar(pb, b)
-		
-		bs[[b]] <- list(a0 = a0, a1 = a1)
-	}
-	saveRDS(bs, here("resources", paste0(tolower(mwf), "_bs_gm", ".rds")))
+	# # Bootstrap ###
+	# studyno <- unique(gm.dt$studyno)
+	# B <- 500
+	# # set.seed(1240)
+	# # who.mcmc <- lapply(1:B, function(b = 1) {
+	# # 	who.mcmc <- data.table(studyno = sample(studyno, replace = T))
+	# # 	who.mcmc$id <- 1:nrow(who.mcmc)
+	# # 	return(who.mcmc)
+	# # 	})
+	# # saveRDS(who.mcmc, here("resources", "who_mcmc.rds"))
+	# who.mcmc <- readRDS(here("resources", "who_mcmc.rds"))
+	# start <- Sys.time()
+	# message("BS started at ", start, "\n")
+	# # Progress bar
+	# pb <- txtProgressBar(min = 0, max = B, style = 3)
+	# bs <- list()
+	# for (b in 1:B) {
+	# 	bs.dt <- merge(
+	# 		who.mcmc[[b]],
+	# 		gm.dt[studyno %in% who.mcmc[[b]]$studyno,
+	# 					c("studyno", "year", "canc", "other_canc", "All causes",
+	# 						"R", "Plant", "Race", "Sex", "Hire", "Age", "Off",
+	# 						"Straight", "Soluble", "Synthetic",
+	# 						"cum_Straight", "cum_Soluble", "cum_Synthetic", "Any", "N"),
+	# 					with = F],
+	# 		by = "studyno",
+	# 		all.x = T, allow.cartesian = T
+	# 	)
+	# 	bs.dt[,`:=`(studyno = id,
+	# 							id = studyno)]
+	# 	
+	# 	a0 <- get_estimates_gm(a = 0,
+	# 												 dt = copy(bs.dt),
+	# 												 mwf = mwf)
+	# 	
+	# 	a1 <- get_estimates_gm(a = 1,
+	# 												 dt = copy(bs.dt),
+	# 												 mwf = mwf)
+	# 	# Set progressbar
+	# 	setTxtProgressBar(pb, b)
+	# 	
+	# 	bs[[b]] <- list(a0 = a0, a1 = a1)
+	# }
+	# saveRDS(bs, here("resources", paste0(tolower(mwf), "_bs_gm", ".rds")))
 }
 

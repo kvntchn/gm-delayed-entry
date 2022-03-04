@@ -1,0 +1,260 @@
+---
+title: "Estimating survival in left filtered data"
+subtitle: "Replication and application of Izano's estimator"
+author: "Kevin Chen"
+fontsize: 11pt
+# mainfont: arial
+output:
+  beamer_presentation:
+    toc: false
+    slide_level: 1
+    # latex_engine: lualatex
+    includes:
+      in_header: "~/HeadRs/BeamerHead.sty"
+bibliography: "`r path.expand('~/Box Sync/papers/EnvEpi.bib')`"
+---
+
+```{r, include=F}
+knitr::opts_chunk$set(echo = F, results = "asis", fig.align = "center")
+if (!"mytheme" %in% ls()) {
+  source("~/headRs/00-my-theme.R")
+  library(data.table)
+  options(tikzDefaultEngine = 'pdftex')
+}
+library(tidyverse); library(data.table)
+library(here)
+```
+
+# Chapter 3 of Izano (2017)
+
+## Drivers of Biased Effect Estimates in Left Filtered Data
+
+- Specified a SEM for "left filtering" in the presence of HWSE
+- Simulated large-sample ($n = 10^6$) data once for each of 5 scenarios
+- Simulated finite-sample ($n = 50,000$) data 500 times for each scenario
+- Applied two estimators:
+  - Adjusted Kaplan-Meier
+  - Delayed-entry adjusted Kaplan-Meier
+
+# Description of variables
+
+\begin{table}
+\begin{center}
+\begin{adjustbox}{width=0.85\linewidth}{
+\begin{tabular}{lp{0.65\linewidth}}
+\toprule
+ Variable  &  Description                                 \\ \midrule
+ $R$       & Time until start of registry \\
+ $W$       & Baseline covariates \\
+ $S$       & Susceptibility to effects of metalworking fluid exposure \\
+ $H(t)$    & Adverse health status at time $t$ \\
+ $N(t)$    & Employment status at time $t$ \\
+ $A(t)$    & Metalworking fluid exposure at time $t$ \\
+ $D(t)$    & Mortality status at time $t$ \\
+ $Y^*(t)$  & Cancer status at time $t$ \\
+ $Y(t)$    & Observed Cancer status at time $t$ \\
+ $t = \{1, 2, \ldots, 20\}$ & Time, indexed in years after hire \\
+ \bottomrule
+\end{tabular}
+}\end{adjustbox}
+\end{center}
+\end{table}
+
+# Abbreviated DAG summarizing the causal structure
+
+\begin{figure}
+\begin{center}
+\begin{adjustbox}{width=\linewidth}{
+\begin{tikzpicture}[>= stealth, auto, node distance = 2.25cm, semithick, fill=white, inner sep=0pt]
+\tikzstyle{every state}=[shape = circle, align = center, draw = none]
+\node[state] (H0) {$H(t - 1)$};
+\node[state] (N0) [below right of=H0] {$N(t - 1)$};
+\node[state] (A0) [below right of=N0] {$\bar A(t - 1)$};
+\node[state] (D0) [below right of=A0] {$D(t - 1)$};
+\node[state] (Y0) [below right of=D0] {$Y^*(t - 1)$};
+\node[state] (W) [above right of=H0] {$W$};
+\node[state] (H) [right of=H0, node distance = 4cm] {$H(t)$};
+\node[state] (N) [below right of=H, node distance = 4cm] {$N(t)$};
+\node[state] (A) [below right of=N, node distance = 4cm] {$\bar A(t)$};
+\node[state] (D) [above right of=N, node distance = 3cm] {$D(t)$};
+\node[state] (Y) [above right of=A, node distance = 3cm] {$Y^*(t)$};
+\node[state] (S) [above right of=D, node distance = 3cm] {$S$};
+%
+\path[->] (H0) edge (N0);
+\path[->] (N0) edge (A0);
+\path[->] (A0) edge [bend right=30] (Y0);
+\path[->] (H0) edge (H);
+\path[->] (W) edge [bend right=10] (N);
+\path[->] (N0) edge (N);
+\path[->] (H) edge (N);
+\path[->] (A0) edge (N);
+\path[->] (W) edge [bend right=15] (A);
+\path[->] (A0) edge (A);
+\path[->] (N) edge (A);
+\path[->] (W) edge (D);
+\path[->] (A0) edge [bend left=15] (D);
+\path[->] (D0) edge [bend right=15] (D);
+\path[->] (Y0) edge [bend right=10] (D);
+\path[->] (W) edge [bend left=5] (Y);
+\path[->] (S) edge [bend left=30] (Y);
+\path[->] (S) edge [bend left=15] (Y0);
+\path[->] (H) edge (Y);
+\path[->] (A) edge (Y);
+\path[->] (D) edge (Y);
+\path[->] (Y0) edge (Y);
+\end{tikzpicture}
+}\end{adjustbox}
+\end{center}
+\end{figure}
+
+# Scenarios
+
+- Five scenarios represent 5 sets of parameters used to generate data according to the SEM
+- Sets 2, 3, 4, and 5 differ from Set 1 by a single parameter each
+  - Scenario 2: Greater cancer-related mortality\
+  (increase HR from 1.6 to 7.4)
+  - Scenario 3: Greater proportion of susceptibles\
+  (increase proportion from 10\% to 20\%)
+  - Scenario 4: Greater time-varying confounding by history of adverse health\
+  (decrease HR of being at work from 0.6 to 0.2 \
+  and increase HR of cancer incidence from 2.0 to 5.5)
+  - Scenario 5: Greater background incidence\
+  (increase baseline log hazard from -7 to -6)
+
+# Target and estimation
+
+- Goal: estimate cancer-free survival indexed by time since hire
+  - Under rule where all are exposed while at work
+  - Under rule where all are not exposed (ever)
+  - Competing risk of death is accounted for by preventing death
+- Adjusted KM ie the inverse probability of treatment weighted KM (WKM)
+- Delayed-entry adjusted KM ie the Aalen-filtered WKM (AWKM)
+
+# Review of the Kaplan-Meier Estimator
+
+- Let $c(t)$ be the number of cases in the interval $(t - 1, t]$
+- Let $r(t)$ be the number of people at risk in interval $(t - 1, t]$
+- The standard survival estimator is
+$$\widehat {S}(t) =
+\begin{cases}
+1 & \text{if } t < t_1 \\
+\prod_{j \le t} \left(1 - \frac{c(j)}{r(j)}\right) & \text{if } t \ge t_1 \\
+\end{cases}$$
+where $t_1$ is the first event time
+- Restricting to followers of rule $a$, we have \vspace{-0.5\baselineskip}
+$$c_a(t), \hspace{1em} r_a(t), \hspace{1em} \widehat{S}_a(t)$$
+
+# Mathematical expression of $c_a(t)$ and $r_a(t)$
+
+$$\begin{aligned}
+c_{a} (t)
+& = \sum_i^n \underbrace{\Ind{Y_i(t) = 1}}_{\text{Cancer by time } t}
+    \times \underbrace{\Ind{Y_i(t - 1) = 0}}_{\text{At-risk at time } t - 1}
+    \times \underbrace{\Ind{\bar A_i (t) = \bar a(t)}}_{\text{Followed rule } a} \\
+r_{a} (t)
+& = \sum_i^n \underbrace{\Ind{Y_i(t - 1) = 0}}_{\text{At-risk at time } t - 1}
+    \times \underbrace{\Ind{\bar A_i (t) = \bar a(t)}}_{\text{Followed rule } a}.
+\end{aligned}$$
+
+# Inverse probability of treatment weighted KM (WKM)
+
+The $i$th person at time $t$ is weighted by $w_{i, a}(t)$ the predicted probability of following rule $a$ through time $t$:
+
+\begin{adjustbox}{scale=0.8}\parbox{\linewidth}{
+$$\begin{aligned}
+c^w_{a} (t)
+& = \sum_i^n w_{i, a}(t)
+    \times \Ind{Y_i(t) = 1}
+    \times \Ind{Y_i(t - 1) = 0}
+    \times \Ind{\bar A_i (t) = \bar a(t)} \\
+r^w_{a} (t)
+& = \sum_i^n  w_{i, a}(t)
+    \times \Ind{Y_i(t - 1) = 0}
+    \times \Ind{\bar A_i (t) = \bar a(t)}.
+\end{aligned}$$}
+\end{adjustbox}
+
+The $w_{i, a}$ can be estimated by fitting logistic regressions.
+
+# Aalen-filtered WKM (AWKM)
+
+In addition to weighting, we restrict the computation of the discrete hazard to those under observation:
+
+\begin{adjustbox}{scale=0.8}\parbox{\linewidth}{
+$$\begin{aligned}
+c_{a} (t)
+& = \sum_i^n w_{i, a}(t) \times \Ind{Y_i(t) = 1} \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)} \times \Ind{t \ge R_i} \\
+r_{a} (t)
+& = \sum_i^n w_{i, a}(t) \times \Ind{Y_i(t - 1) = 0} \times \Ind{\bar A_i (t) = \bar a(t)} \times \Ind{t \ge R_i}
+\end{aligned}$$
+}\end{adjustbox}
+
+# Results from Izano's Dissertation (2017)
+
+\includegraphics[width=\textwidth]{private/izano_2017_result_1}
+\includegraphics[width=\textwidth]{private/izano_2017_result_2}
+
+\begin{center}
+\begin{tabular}{ll}
+Red: Always exposed & Blue: Never exposed
+\end{tabular}
+\begin{tabular}{lll}
+Long dashed: WKM & Dot dashed: AWKM & Solid: True KM curve
+\end{tabular}
+\end{center}
+
+# Results from Izano's Dissertation (2017)
+
+\includegraphics[width=\textwidth]{private/izano_2017_result_3}
+\includegraphics[width=\textwidth]{private/izano_2017_result_4}
+
+\begin{center}
+\begin{tabular}{ll}
+Red: Always exposed & Blue: Never exposed
+\end{tabular}
+\begin{tabular}{lll}
+Long dashed: WKM & Dot dashed: AWKM & Solid: True KM curve
+\end{tabular}
+\end{center}
+
+# Results from Izano's Dissertation (2017)
+
+\includegraphics[width=\textwidth]{private/izano_2017_result_5}
+
+\begin{center}
+\begin{tabular}{ll}
+Red: Always exposed & Blue: Never exposed
+\end{tabular}
+\begin{tabular}{lll}
+Long dashed: WKM & Dot dashed: AWKM & Solid: True KM curve
+\end{tabular}
+\end{center}
+
+# Replication results
+
+\includegraphics[width=\textwidth]{reports/resources/results_1-2}
+
+# Replication results
+
+\includegraphics[width=\textwidth]{reports/resources/results_3-4}
+
+# Replication results
+
+\includegraphics[width=\textwidth]{reports/resources/results_5}
+
+# Application to UAW-GM
+
+- Study population: Workers from Plants 1 or 2, hired after 1938
+- 55-year follow-up starting at hire
+- MWF exposure lagged 15 years
+- Employment records end in 1994; workers considered administratively censored if they were still at work in 2010 (15 years after1 995)
+- Rules of interest
+  - Natural course: ever-exposed above reference level (0 mg/m^3^$\cdot$years for straights and synthetics; 0.05 mg/m^3^$\cdot$years for solubles)
+  - Never exposed
+- Under both rules, no censoring by death
+
+# Application results
+
+\begin{center}
+\includegraphics[width=0.95\textwidth]{reports/resources/gm_results}
+\end{center}

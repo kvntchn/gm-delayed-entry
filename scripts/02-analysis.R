@@ -98,22 +98,29 @@ get_truth <- function(scenario, a, n = 5e5, R.rdist = function(x) {runif(x, 0, 2
 		Truth = c(rep(1, 20 - length(km$surv)), km$surv)
 		))}
 
-# truth_a0 <- lapply(1:5, get_truth, a = 0, n = 5e4)
-# saveRDS(truth_a0, here("resources", "truth_a0.rds"))
-# truth_a1 <- lapply(1:5, get_truth, a = 1, n = 5e4)
-# saveRDS(truth_a1, here("resources", "truth_a1.rds"))
-# 
-# M <- 250
-# pb <- txtProgressBar(min = 0, max = M, style = 3)
-# message("\nScenario ", scenario, ", a = 0")
-# a0 <- lapply(1:M, function(i) {
-# 	setTxtProgressBar(pb, i)
-# 	return(get_estimates(scenario))})
-# saveRDS(a0, here("resources", paste0("a0_scenario", scenario, ".rds")))
-# 
-# pb <- txtProgressBar(min = 0, max = M, style = 3)
-# message("\nScenario ", scenario, ", a = 1")
-# a1 <- lapply(1:M, function(i) {
-# 	setTxtProgressBar(pb, i)
-# 	return(get_estimates(scenario, a = 1))})
-# saveRDS(a1, here("resources", paste0("a1_scenario", scenario, ".rds")))
+truth_a0 <- lapply(1:5, get_truth, a = 0, n = 5e5)
+saveRDS(truth_a0, here("resources", "truth_a0.rds"))
+truth_a1 <- lapply(1:5, get_truth, a = 1, n = 5e5)
+saveRDS(truth_a1, here("resources", "truth_a1.rds"))
+
+M <- 500
+# scenario <- 1
+# for (scenario in 1:5) {
+	pb <- txtProgressBar(min = 0, max = M, style = 3)
+	message("\nScenario ", scenario, ", a = 0")
+	a0 <- list()
+	for (i in 1:M) {
+		a0[[i]] <- get_estimates(scenario)
+		setTxtProgressBar(pb, i)
+	}
+	saveRDS(a0, here("resources", paste0("a0_scenario", scenario, ".rds")))
+	
+	message("\nScenario ", scenario, ", a = 1")
+	pb <- txtProgressBar(min = 0, max = M, style = 3)
+	a1 <- list()
+	for (i in 1:M) {
+		a1[[i]] <- get_estimates(scenario, a = 1)
+		setTxtProgressBar(pb, i)
+	}
+	saveRDS(a1, here("resources", paste0("a1_scenario", scenario, ".rds")))
+# }

@@ -21,6 +21,16 @@ library(here)
 
 ```{r}
 sim_results <- readRDS(here("reports/resources", "sim_results.rds"))
+risk.tab <- dcast(
+	sim_results[t == max(t),.(
+		Risk = 1 - Survival
+	), .(Rule = rule, scenario, Estimator)],
+	... ~ scenario,
+	value.var = "Risk"
+)
+
+setorder(risk.tab, Rule, Estimator)
+
 survival.tab <- dcast(
 	sim_results[,.(
 		Survival = sum(Survival)
@@ -87,4 +97,10 @@ print(xtable(
 	caption = "Bias estimates of estimators for $\\psi$, the difference in average cancer-free survival time over 20 years of follow-up.",
 	label = "tab:bias"),
 	floating = T)
+
+print(xtable(risk.tab,
+			 caption = "True cancer-free 20-year risk and estimator averages over 250 replicates.",
+			 label = "tab:survival"),
+			hline.after = c(-1,0,3, nrow(survival.tab)),
+			floating = T)
 ```

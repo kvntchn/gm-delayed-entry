@@ -21,14 +21,14 @@ library(here)
 
 # Application to the UAW-GM Cohort
 
-In the simulation study, we showed that under several scenarios compatible with our hypothetical causal structure, the AWKM survival estimator had a smaller bias than the WKM estimator. The bias was smaller when the cumulative incidence of the outcome was low and at later follow-up time points. Next, we estimated cancer-free survival in a real-world context. Using data from two plants participating in the UAW-GM Cohort study, we followed $26\,182$ individuals starting from hire to 65 years after hire for incidence of digestive system cancers (colon, rectal, esophageal, or stomach). As in the simulation, the UAW-GM data were longitudinal data with baseline covariates, time-varying covariates, and a survival outcome.
+In the simulation study, we showed that under several scenarios compatible with our hypothetical causal structure, the AWKM survival estimator had a smaller bias than the WKM estimator. The bias was smaller when the cumulative incidence of the outcome was low and at later follow-up time points. Next, we estimated cancer-free survival in a real-world context. Using data from two plants participating in the UAW-GM Cohort study, we followed $26\,182$ individuals starting from hire to 55 years after hire for incidence of digestive system cancers (colon, rectal, esophageal, or stomach). As in the simulation, the UAW-GM data were longitudinal data with baseline covariates, time-varying covariates, and a survival outcome.
 
 The exposures of interest were MWF of three types: straight, soluble, and synthetic [@Byers_2006; @Mirer_2003; @Mirer_2010]. Straight MWFs are hydrocarbon-based fluids that became widely-used by the 1920s. They continue to occupy a large portion of the MWF market due to their simple formulation. In straight MWFs, hydrocarbons of different lengths are mixed together with other additives to attain different properties. Straight MWFs contain polycyclic aromatic hydrocarbons, long known to be carcinogenic [@IARC_1973]. Soluble oils are water-based oil emulsions first introduced in response to rising oil prices. They now make up the largest market share of MWFs [@Childers_2006]. Soluble MWFs are vulnerable to microbial contamination, so they contain biocides and chlorinated chemicals. Soluble MWFs have carcinogenic potential from both their oil components and their additives, but their high lubricity makes them the most popular fluid type. Synthetic MWFs have the best toxicological profile, have no oil, and have a higher resistance to microbial growth. They were introduced into the MWF market in the second half of the 20th C., but failed to out-perform soluble MWFs in industrial metalworking applications. Synthetic MWFs contain biocides, corrosion inhibitors, and chlorinated compounds, some classified as carcinogenic by the IARC [@IARC_1987].
 
 The outcome of interest was digestive system cancer incidence. There is little past research linking digestive system cancers to MWF exposures, but there is some evidence suggesting that straight MWFs cause digestive system cancers [@Izano_2019].
 <!-- We obtained cancer incidence data for those at Plant 3 via linkage to the Michigan Cancer Registry, which recorded cancer incidence cases starting on January 1, 1985. -->
 Cancer incidence was obtained by linkage to Surveillance, Epidemiology, and End Results (SEER), which recorded cancer incidence cases starting on January 1, 1973.
-The cohort is comprised of individuals hired between 1938 and 1975. Cancer-free survival to the start of the registry was a left-filtering process possibly in the presence of the HWSE, as was the case in simulations. Over the 65 year follow-up period, vital status was obtained through the Social Security Administration, the National Death Index, as well as records provided by the UAW. The exposure rules of interest in the applied analysis were different than those in the simulation study: $a_0$ having cumulative exposure of more than 0.05 mg/m^3^ years and $a_1$ having no cumulative exposure. Weights were truncated at 1000. Exposure was binary and defined to be whether there was exposure above the median level of exposure to straight, soluble, and synthetic MWFs. Counterfactual survival under rules $a_0$ and $a_1$ were estimated using the WKM and AWKM estimators. Treatment and censoring mechanisms were estimated using logistic regression conditional on baseline and time-varying confounders. These logistic regressions were estimated with stratification by every two years of follow-up. Baseline confounders included race, sex, plant, and year of hire. Time-varying confounders included age, cumulative time off, employment status, and exposure to the metalworking fluids exposure from past years (3 years in the case of exposure and 6 years in the case of death due to censoring). Summary statistics for the full study population and those who experienced digestive system cancer are presented in Table \ref{tab:popchar}.
+The cohort is comprised of individuals hired between 1938 and 1985. Cancer-free survival to the start of the registry was a left-filtering process possibly in the presence of the HWSE, as was the case in simulations. Over the 55-year follow-up period, vital status was obtained through the Social Security Administration, the National Death Index, as well as records provided by the UAW. The exposure rules of interest in the applied analysis were different than those in the simulation study: $a_0$ having cumulative exposure greater than the lower threshold as observed and $a_1$ having no exposure. Weights were truncated at 500. Counterfactual survival under rules $a_0$ and $a_1$ were estimated using the WKM and AWKM estimators. Treatment and censoring mechanisms were estimated using logistic regression conditional on baseline and time-varying confounders. These logistic regressions were estimated with stratification by every two years of follow-up. Baseline confounders included race, sex, plant, and year of hire. Time-varying confounders included age, cumulative time off, employment status, and cumulative exposure to the metalworking fluids exposure up to through previous year. Summary statistics for the full study population and those who experienced digestive system cancer are presented in Table \ref{tab:popchar}.
 
 ```{r, eval=F}
 library(tableone)
@@ -144,7 +144,7 @@ Another key assumption meriting discussion is that of sequential ignorability. I
 source(here("scripts", "05-application-results.R"))
 
 gm_survival.tab <- dcast(
-	melt(gm.surv[t <= 65],
+	melt(gm.surv[t <= 55],
 			 measure.vars = c("WKM", "AWKM"),
 			 variable.name = "Estimator",
 			 value.name = "Survival")[,.(
@@ -184,7 +184,7 @@ gm_cir.tab <- gm_ci.tab[,.(
 # pander(gm_differences.tab); pander(gm_cir.tab)
 ```
 
-Estimated digestive system cancer-free curves under rules $a_0$ and $a_1$ applied to the three MWF types are presented in Figure \ref{fig:gm_survival}. Surprisingly, the survival curves were more or less overlapping under the two exposure rules. Numeric values for the cancer-free survival and difference in cancer-free survival are presented in Tables \ref{tab:gm_survival} and \ref{tab:gm_differences}. The numeric summaries were consistent with the qualitative interpretation of the estimated survival curves; expected survival time does not differ substantially comparing rules $a_0$ and $a_1$ applied to all MWF types. Nonetheless, reducing exposure to straight and soluble MWFs yielded a longer estimated survival time, though the difference was less than a month in time.
+Estimated digestive system cancer-free curves under rules $a_0$ and $a_1$ applied to the three MWF types are presented in Figure \ref{fig:gm_survival}. Numeric values for the cancer-free survival and difference in cancer-free survival are presented in Tables \ref{tab:gm_survival} and \ref{tab:gm_differences}. The numeric summaries were consistent with the qualitative interpretation of the estimated survival curves. Nonetheless, reducing exposure to straight and soluble MWFs yielded a longer expected digestive-free survival time.
 
 \begin{figure}[h]
 \caption{Cancer-free survival over time since hire under interventions for exposure to straight, soluble, and synthetic metalworking fluids. The estimated inverse probability weighted Kaplan-Meier (WKM) survival curve is represented by the solid. The estimated Aalen-filtered inverse probability weighted Kaplan-Meier (AWKM) survival curve is represented by the dashed-line. Salmon color indicates survival and survival estimates under rule $a_0$; cyan color indicates those under rule $a_1$.}
@@ -196,38 +196,39 @@ Estimated digestive system cancer-free curves under rules $a_0$ and $a_1$ applie
 
 ```{r}
 print(xtable(gm_survival.tab,
-			 caption = "Estimated cancer-free survival time over 65-year follow-up.",
+			 caption = "Estimated cancer-free survival time over 55-year follow-up.",
 			 label = "tab:gm_survival", digits = 4),
 			hline.after = c(-1,0,2, nrow(gm_survival.tab)),
 			floating = T)
 
 
 print(xtable(gm_differences.tab,
-			 caption = "Estimated difference in average cancer-free survival time over 65-year follow-up comparing rule $a_1$ exposed above the median level of exposure with probability 1\\% to $a_0$ never exposed.",
+			 caption = "Estimated difference in average cancer-free survival time over 55-year follow-up comparing rule $a_1$ exposed above the median level of exposure with probability 1\\% to $a_0$ never exposed.",
 			 label = "tab:gm_differences", digits = 4),
 			floating = T)
 
 ```
 
-Figure \ref{fig:gm_weights} presents the median cumulative weight applied years since hire with ribbons showing the minimum and maximum weight. The overlap in the distribution of weights under the two rules for synthetic MWF exposure suggests that the model for the treatment and censoring mechanisms were inadequate in distinguishing the units of analysis by their probability of following a certain exposure rule or of remaining alive. The distribution of the weights was very skewed. Without truncation, they would have been in the order of magnitude of $10^{20}$ or even higher. Distributional summaries of the cumulative weights without truncation are presented in Table \ref{tab:gm_w}. The presence of extremely large weights suggests that our observed data were inadequate for answering the causal questions of interest due to practical violations in overlap [@Petersen_2012].
+<!-- Figure \ref{fig:gm_weights} presents the median cumulative weight applied years since hire with ribbons showing the minimum and maximum weight. The distribution of the weights was very skewed. Without truncation, they would have been in the order of magnitude of $10^{20}$ or even higher. -->
+Distributional summaries of the cumulative weights without truncation are presented in Table \ref{tab:gm_w}. The presence of extremely large weights suggests that our observed data were inadequate for answering the causal questions of interest due to practical violations in overlap [@Petersen_2012].
 
 ```{r}
 gm_w.small_tab <- rbindlist(list(
 	gm_w.tab[t == 1,],
-	gm_w.tab[t == 57,]))
+	gm_w.tab[t == 55,]))
 
 gm_w.small_tab <- gm_w.small_tab[estimator == "WKM", -1]
 setorder(gm_w.small_tab, t, mwf, rule)
 
 gm_w.small_tab$mwf <- rep(as.vector(sapply(
-	c("Straight", "Soluble", "Synthetic", "Any"), function(x) {
+	c("Straight", "Soluble", "Synthetic"), function(x) {
 	c(x, "")})), 2)
 
 names(gm_w.small_tab)[1:3] <- c("MWF type", "Rule", "$t$")
 
 print(xtable(
 	gm_w.small_tab,
-	caption = "Summary statistics for the cumulative weights used for the WKM estimator at $t = 1$ and $t = 65$ years since hire for each metalworking fluid type and exposure rule.",
+	caption = "Summary statistics for the cumulative weights used for the WKM estimator at $t = 1$ and $t = 55$ years since hire for each metalworking fluid type and exposure rule.",
 	label = "tab:gm_w",
 	display = c("s", "s", "s", "d", "g", "g", "g", "g", "g", "g")),
 	math.style.exponents = TRUE,

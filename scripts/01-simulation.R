@@ -12,6 +12,8 @@ sim_param <- readRDS(here::here("resources", "sim_param.rds"))
 rownames(sim_param) <- sim_param[,1]
 sim_param <- sim_param[,-1]
 
+sim_param["beta_0Y",] <- c(rep(-14, 4), -7)
+
 sim_data <- function(
 	scenario = 1,
 	n = 50000,
